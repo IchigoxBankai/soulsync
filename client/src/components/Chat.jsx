@@ -1,37 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSocket } from '../context/SocketContext';
-import { MessageCircle, X, Send, Smile, Volume2, VolumeX, Moon, Sun, LogOut, Edit2, Play } from 'lucide-react';
+import { MessageCircle, X, Send, Smile } from 'lucide-react';
 import { audioController } from '../utils/audio';
 
-export const ReactionOverlay = () => {
-  const { reactions } = useSocket();
-
-  return (
-    <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
-      {reactions.map((reaction) => (
-        <div
-          key={reaction.id}
-          className="absolute bottom-0 text-5xl animate-bubble-float select-none"
-          style={{
-            left: `${reaction.x}%`,
-            animationDuration: '4s',
-          }}
-        >
-          {reaction.emoji}
-        </div>
-      ))}
-    </div>
-  );
-};
-
 export const Chat = () => {
-  const { messages, sendMessage, sendReaction, room, player } = useSocket();
+  const { messages, sendMessage, room, player } = useSocket();
   const [isOpen, setIsOpen] = useState(false);
   const [text, setText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const chatEndRef = useRef(null);
-
-  const quickReactions = ['❤️', '😂', '😭', '👏', '🔥', '🥺'];
 
   useEffect(() => {
     if (chatEndRef.current) {
@@ -47,31 +24,10 @@ export const Chat = () => {
     audioController.playClick();
   };
 
-  const handleQuickReaction = (emoji) => {
-    sendReaction(emoji);
-    audioController.playClick();
-  };
-
   if (!room) return null;
 
   return (
     <>
-      {/* Quick Reaction Bar - Floating on screen bottom right */}
-      <div className="fixed bottom-24 right-4 z-40 flex flex-col items-center gap-2">
-        <div className="glass flex flex-row items-center gap-1.5 p-2 rounded-full shadow-lg border border-pink-200/50">
-          {quickReactions.map((emoji) => (
-            <button
-              key={emoji}
-              onClick={() => handleQuickReaction(emoji)}
-              className="text-2xl hover:scale-130 active:scale-95 transition-all p-1"
-              title={`Send ${emoji}`}
-            >
-              {emoji}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Floating Chat Button */}
       {!isOpen && (
         <button

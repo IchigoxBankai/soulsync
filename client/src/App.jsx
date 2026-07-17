@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SocketProvider, useSocket } from './context/SocketContext';
 import { Navbar } from './components/Navbar';
 import { Scoreboard } from './components/Scoreboard';
-import { Chat, ReactionOverlay } from './components/Chat';
+import { Chat } from './components/Chat';
 import { SameBrain } from './components/games/SameBrain';
 import { WouldYouRather } from './components/games/WouldYouRather';
 import { SecretMessage } from './components/games/SecretMessage';
@@ -253,7 +253,9 @@ const MainApp = () => {
                         <Sparkles size={20} className="text-pink-500 fill-pink-500" />
                       </h2>
                       <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-                        Click on any game card below to enter the screen together!
+                        {player?.isHost 
+                          ? "Click on any game card below to enter the screen together!" 
+                          : "Waiting for host to select a game..."}
                       </p>
                     </div>
 
@@ -268,23 +270,31 @@ const MainApp = () => {
                         { id: 'truthOrDare', name: 'Truth or Dare', icon: '😈', color: 'hover:border-purple-300 hover:shadow-purple-500/10' },
                         { id: 'guessMyMood', name: 'Guess My Mood', icon: '🎭', color: 'hover:border-pink-300 hover:shadow-pink-500/10' },
                         { id: 'loveBingo', name: 'Love Bingo', icon: '❤️', color: 'hover:border-purple-300 hover:shadow-purple-500/10' }
-                      ].map((game) => (
-                        <button
-                          key={game.id}
-                          onClick={() => {
-                            selectGame(game.id);
-                            audioController.playClick();
-                          }}
-                          className={`glass p-5 rounded-3xl border border-pink-200/15 text-center flex flex-col items-center justify-center gap-3 transition-all duration-300 hover:-translate-y-1 hover:scale-103 shadow-sm hover:shadow-md ${game.color}`}
-                        >
-                          <span className="text-4xl select-none filter drop-shadow">
-                            {game.icon}
-                          </span>
-                          <span className="font-bold text-sm text-slate-700 dark:text-slate-200">
-                            {game.name}
-                          </span>
-                        </button>
-                      ))}
+                      ].map((game) => {
+                        const isDisabled = !player?.isHost;
+                        return (
+                          <button
+                            key={game.id}
+                            disabled={isDisabled}
+                            onClick={() => {
+                              selectGame(game.id);
+                              audioController.playClick();
+                            }}
+                            className={`glass p-5 rounded-3xl border border-pink-200/15 text-center flex flex-col items-center justify-center gap-3 transition-all duration-300 shadow-sm ${
+                              isDisabled
+                                ? 'opacity-50 cursor-not-allowed'
+                                : `hover:-translate-y-1 hover:scale-103 hover:shadow-md ${game.color}`
+                            }`}
+                          >
+                            <span className="text-4xl select-none filter drop-shadow">
+                              {game.icon}
+                            </span>
+                            <span className="font-bold text-sm text-slate-700 dark:text-slate-200">
+                              {game.name}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -293,7 +303,6 @@ const MainApp = () => {
             
             {/* Float Chat panel overlay */}
             <Chat />
-            <ReactionOverlay />
           </div>
         )}
       </div>

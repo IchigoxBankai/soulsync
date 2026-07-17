@@ -224,21 +224,10 @@ io.on('connection', (socket) => {
     });
   });
 
-  // Floating Reaction
-  socket.on('send_reaction', ({ emoji }) => {
-    const { room, player } = getRoomAndPlayer(socket);
-    if (!room || !player) return;
-
-    io.to(room.code).emit('floating_reaction', {
-      senderId: player.id,
-      emoji: emoji
-    });
-  });
-
-  // Choose / Change current game
+  // Choose / Change current game (Host only)
   socket.on('select_game', ({ gameName }) => {
-    const { room } = getRoomAndPlayer(socket);
-    if (!room) return;
+    const { room, player } = getRoomAndPlayer(socket);
+    if (!room || !player || !player.isHost) return;
 
     room.currentGame = gameName;
     
@@ -264,6 +253,11 @@ io.on('connection', (socket) => {
       room.gameStates.fastestTap.results = {};
       room.gameStates.fastestTap.scores = room.players.reduce((acc, p) => ({ ...acc, [p.id]: 0 }), {});
       room.gameStates.fastestTap.state = 'waiting';
+      // Clear any remaining fastest tap timeouts
+      if (room.gameStates.fastestTap.timeout) {
+        clearTimeout(room.gameStates.fastestTap.timeout);
+        room.gameStates.fastestTap.timeout = null;
+      }
     } else if (gameName === 'truthOrDare') {
       room.gameStates.truthOrDare.category = '';
       room.gameStates.truthOrDare.type = '';
@@ -284,12 +278,19 @@ io.on('connection', (socket) => {
     broadcastRoomUpdate(room.code);
   });
 
-  // Leave active game (back to menu)
+  // Leave active game (back to menu) (Host only)
   socket.on('leave_game', () => {
-    const { room } = getRoomAndPlayer(socket);
-    if (!room) return;
+    const { room, player } = getRoomAndPlayer(socket);
+    if (!room || !player || !player.isHost) return;
 
     room.currentGame = null;
+    
+    // Clear any active fastest tap timeouts
+    if (room.gameStates.fastestTap?.timeout) {
+      clearTimeout(room.gameStates.fastestTap.timeout);
+      room.gameStates.fastestTap.timeout = null;
+    }
+
     broadcastRoomUpdate(room.code);
   });
 
@@ -466,8 +467,14 @@ io.on('connection', (socket) => {
 
   // GAME 5: Fastest Tap
   socket.on('fastest_tap_start', () => {
-    const { room } = getRoomAndPlayer(socket);
-    if (!room) return;
+    const { room, player } = getRoomAndPlayer(socket);
+    if (!room || !player || !player.isHost) return;
+
+    // Clear any active timeouts
+    if (room.gameStates.fastestTap.timeout) {
+      clearTimeout(room.gameStates.fastestTap.timeout);
+      room.gameStates.fastestTap.timeout = null;
+    }
 
     room.gameStates.fastestTap.state = 'countdown';
     room.gameStates.fastestTap.results = {};
@@ -478,10 +485,11 @@ io.on('connection', (socket) => {
     
     io.to(room.code).emit('fastest_tap_countdown_start', { delay });
 
-    setTimeout(() => {
+    room.gameStates.fastestTap.timeout = setTimeout(() => {
       const activeRoom = rooms.get(room.code);
       if (activeRoom && activeRoom.gameStates.fastestTap.state === 'countdown') {
         activeRoom.gameStates.fastestTap.state = 'go';
+        activeRoom.gameStates.fastestTap.timeout = null;
         broadcastRoomUpdate(activeRoom.code);
       }
     }, delay + 3000); // 3 seconds count down on client, then delay
@@ -490,6 +498,50 @@ io.on('connection', (socket) => {
   socket.on('fastest_tap_submit', ({ timeMs }) => {
     const { room, player } = getRoomAndPlayer(socket);
     if (!room || !player) return;
+
+    // Handle early tap (Foul) during countdown or delay
+    if (timeMs === 9999) {
+      if (room.gameStates.fastestTap.state === 'countdown') {
+        // Clear active timeouts
+        if (room.gameStates.fastestTap.timeout) {
+          clearTimeout(room.gameStates.fastestTap.timeout);
+          room.gameStates.fastestTap.timeout = null;
+        }
+
+        const foulingPlayerId = player.id;
+        const nonFoulingPlayer = room.players.find(p => p.id !== foulingPlayerId);
+
+        room.gameStates.fastestTap.results[foulingPlayerId] = 9999;
+        if (nonFoulingPlayer) {
+          room.gameStates.fastestTap.results[nonFoulingPlayer.id] = 0; // standard win
+          room.gameStates.fastestTap.scores[nonFoulingPlayer.id] = (room.gameStates.fastestTap.scores[nonFoulingPlayer.id] || 0) + 1;
+        }
+
+        room.gameStates.fastestTap.state = 'result';
+
+        // Check if match over (best of 5, first to 3 points)
+        let matchWinnerId = null;
+        room.players.forEach(p => {
+          if (room.gameStates.fastestTap.scores[p.id] >= 3) {
+            matchWinnerId = p.id;
+            p.score += 1; // Award overall point
+          }
+        });
+
+        if (matchWinnerId) {
+          room.gameStates.fastestTap.state = 'match_over';
+          room.gameStates.fastestTap.winner = matchWinnerId;
+        }
+
+        io.to(room.code).emit('fastest_tap_round_result', {
+          results: room.gameStates.fastestTap.results,
+          roundWinnerId: nonFoulingPlayer ? nonFoulingPlayer.id : null,
+          scores: room.gameStates.fastestTap.scores,
+          matchWinnerId
+        });
+        return;
+      }
+    }
 
     if (room.gameStates.fastestTap.state !== 'go') return;
 
@@ -542,8 +594,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on('fastest_tap_next_round', () => {
-    const { room } = getRoomAndPlayer(socket);
-    if (!room) return;
+    const { room, player } = getRoomAndPlayer(socket);
+    if (!room || !player || !player.isHost) return;
 
     room.gameStates.fastestTap.round += 1;
     room.gameStates.fastestTap.results = {};
@@ -552,8 +604,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on('fastest_tap_reset', () => {
-    const { room } = getRoomAndPlayer(socket);
-    if (!room) return;
+    const { room, player } = getRoomAndPlayer(socket);
+    if (!room || !player || !player.isHost) return;
 
     room.gameStates.fastestTap.round = 1;
     room.gameStates.fastestTap.results = {};
@@ -709,8 +761,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on('bingo_reset', ({ tasks, boards }) => {
-    const { room } = getRoomAndPlayer(socket);
-    if (!room) return;
+    const { room, player } = getRoomAndPlayer(socket);
+    if (!room || !player || !player.isHost) return;
 
     room.gameStates.loveBingo.tasks = tasks;
     room.gameStates.loveBingo.boards = boards;
@@ -718,10 +770,10 @@ io.on('connection', (socket) => {
     broadcastRoomUpdate(room.code);
   });
 
-  // Global score reset
+  // Global score reset (Host only)
   socket.on('reset_scores', () => {
-    const { room } = getRoomAndPlayer(socket);
-    if (!room) return;
+    const { room, player } = getRoomAndPlayer(socket);
+    if (!room || !player || !player.isHost) return;
 
     room.players.forEach(p => p.score = 0);
     broadcastRoomUpdate(room.code);

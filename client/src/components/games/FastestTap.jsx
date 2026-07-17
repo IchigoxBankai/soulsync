@@ -132,15 +132,19 @@ export const FastestTap = () => {
     <div className="w-full max-w-lg mx-auto p-4 flex flex-col gap-6 select-none animate-in fade-in zoom-in-95 duration-200">
       {/* Game Header */}
       <div className="flex items-center justify-between">
-        <button
-          onClick={() => {
-            leaveGame();
-            audioController.playClick();
-          }}
-          className="p-2 rounded-full glass hover:bg-white/20 text-slate-600 dark:text-slate-300 hover:scale-105 active:scale-95 transition-all shadow-sm"
-        >
-          <ArrowLeft size={16} />
-        </button>
+        {player?.isHost ? (
+          <button
+            onClick={() => {
+              leaveGame();
+              audioController.playClick();
+            }}
+            className="p-2 rounded-full glass hover:bg-white/20 text-slate-600 dark:text-slate-300 hover:scale-105 active:scale-95 transition-all shadow-sm"
+          >
+            <ArrowLeft size={16} />
+          </button>
+        ) : (
+          <div className="w-8 h-8" />
+        )}
         <span className="font-extrabold text-xl bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
           🎯 Fastest Tap
         </span>
@@ -177,16 +181,20 @@ export const FastestTap = () => {
         {state === 'waiting' && (
           <div className="w-full flex flex-col items-center gap-4 py-8">
             <span className="text-5xl animate-bounce">⚡</span>
-            <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 max-w-xs">
-              First player to win 3 rounds is the champion! Click start when both are ready.
+            <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 max-w-xs text-center">
+              {player?.isHost 
+                ? "First player to win 3 rounds is the champion! Click start when both are ready."
+                : "First player to win 3 rounds is the champion! Waiting for host to start..."}
             </span>
-            <button
-              onClick={handleStart}
-              className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold text-base py-3 px-8 rounded-2xl hover:scale-105 active:scale-95 transition-transform flex items-center gap-2 shadow-md"
-            >
-              <Zap size={18} />
-              Start Round
-            </button>
+            {player?.isHost && (
+              <button
+                onClick={handleStart}
+                className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold text-base py-3 px-8 rounded-2xl hover:scale-105 active:scale-95 transition-transform flex items-center gap-2 shadow-md"
+              >
+                <Zap size={18} />
+                Start Round
+              </button>
+            )}
           </div>
         )}
 
@@ -280,21 +288,29 @@ export const FastestTap = () => {
             </div>
 
             {/* Controls */}
-            {state === 'match_over' ? (
-              <button
-                onClick={handleReset}
-                className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-3 px-6 rounded-2xl hover:scale-105 active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
-              >
-                <RotateCcw size={18} />
-                Rematch
-              </button>
+            {player?.isHost ? (
+              state === 'match_over' ? (
+                <button
+                  onClick={handleReset}
+                  className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-3 px-6 rounded-2xl hover:scale-105 active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
+                >
+                  <RotateCcw size={18} />
+                  Rematch
+                </button>
+              ) : (
+                <button
+                  onClick={handleNextRound}
+                  className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-3 px-6 rounded-2xl hover:scale-105 active:scale-95 transition-transform shadow-md"
+                >
+                  Next Round
+                </button>
+              )
             ) : (
-              <button
-                onClick={handleNextRound}
-                className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-3 px-6 rounded-2xl hover:scale-105 active:scale-95 transition-transform shadow-md"
-              >
-                Next Round
-              </button>
+              <span className="text-sm font-semibold text-slate-400 dark:text-slate-500 animate-pulse text-center mt-2">
+                {state === 'match_over' 
+                  ? "Waiting for host to restart match..."
+                  : "Waiting for host to start next round..."}
+              </span>
             )}
           </div>
         )}

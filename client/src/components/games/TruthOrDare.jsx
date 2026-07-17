@@ -26,10 +26,14 @@ export const TruthOrDare = () => {
       // Truth lands on index 0, 2, 4, 6. Dare lands on 1, 3, 5, 7.
       const targetTypeIndex = data.type === 'truth' ? 0 : 1;
       
-      // Calculate angle: spins (5 full rotations = 1800 deg) + offset for slice
       const targetSlice = targetTypeIndex * 45 + 22.5; // mid point of slice
-      const totalDeg = 1800 + (360 - targetSlice); 
-      setSpinDeg(totalDeg);
+      const targetAngle = 360 - targetSlice; 
+
+      // Accumulate spin degree: add 6 full spins + target offset
+      setSpinDeg((prevDeg) => {
+        const currentSpins = Math.floor(prevDeg / 360);
+        return (currentSpins + 6) * 360 + targetAngle;
+      });
 
       audioController.playClick(); // Play initial click
 
@@ -79,15 +83,19 @@ export const TruthOrDare = () => {
     <div className="w-full max-w-lg mx-auto p-4 flex flex-col gap-6 select-none animate-in fade-in zoom-in-95 duration-200">
       {/* Game Header */}
       <div className="flex items-center justify-between">
-        <button
-          onClick={() => {
-            leaveGame();
-            audioController.playClick();
-          }}
-          className="p-2 rounded-full glass hover:bg-white/20 text-slate-600 dark:text-slate-300 hover:scale-105 active:scale-95 transition-all shadow-sm"
-        >
-          <ArrowLeft size={16} />
-        </button>
+        {player?.isHost ? (
+          <button
+            onClick={() => {
+              leaveGame();
+              audioController.playClick();
+            }}
+            className="p-2 rounded-full glass hover:bg-white/20 text-slate-600 dark:text-slate-300 hover:scale-105 active:scale-95 transition-all shadow-sm"
+          >
+            <ArrowLeft size={16} />
+          </button>
+        ) : (
+          <div className="w-8 h-8" />
+        )}
         <span className="font-extrabold text-xl bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
           😈 Truth or Dare
         </span>
