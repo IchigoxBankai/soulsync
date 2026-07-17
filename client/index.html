@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>SoulSync - Real-Time Couple Party Game Website</title>
+    <meta name="description" content="Play fun, real-time mini-games together with your partner, sibling, or friend. No registration, instant room connection, and low latency games." />
+    <script>
+      window.addEventListener('error', function(event) {
+        const errorDiv = document.createElement('div');
+        errorDiv.style.position = 'fixed';
+        errorDiv.style.top = '0';
+        errorDiv.style.left = '0';
+        errorDiv.style.width = '100%';
+        errorDiv.style.height = '100%';
+        errorDiv.style.background = '#fef2f2';
+        errorDiv.style.color = '#991b1b';
+        errorDiv.style.padding = '24px';
+        errorDiv.style.fontFamily = 'monospace';
+        errorDiv.style.fontSize = '14px';
+        errorDiv.style.zIndex = '999999';
+        errorDiv.style.overflow = 'auto';
+        errorDiv.style.whiteSpace = 'pre-wrap';
+        errorDiv.innerText = '⚠️ UNCAUGHT RUNTIME ERROR:\n\n' + event.message + '\n\nFile: ' + event.filename + '\nLine: ' + event.lineno + ':' + event.colno + '\n\nStack Trace:\n' + (event.error ? event.error.stack : 'N/A');
+        document.body.appendChild(errorDiv);
+      });
+      window.addEventListener('unhandledrejection', function(event) {
+        const errorDiv = document.createElement('div');
+        errorDiv.style.position = 'fixed';
+        errorDiv.style.top = '0';
+        errorDiv.style.left = '0';
+        errorDiv.style.width = '100%';
+        errorDiv.style.height = '100%';
+        errorDiv.style.background = '#fef2f2';
+        errorDiv.style.color = '#991b1b';
+        errorDiv.style.padding = '24px';
+        errorDiv.style.fontFamily = 'monospace';
+        errorDiv.style.fontSize = '14px';
+        errorDiv.style.zIndex = '999999';
+        errorDiv.style.overflow = 'auto';
+        errorDiv.style.whiteSpace = 'pre-wrap';
+        errorDiv.innerText = '⚠️ UNHANDLED REJECTION:\n\n' + event.reason + '\n\nStack Trace:\n' + (event.reason && event.reason.stack ? event.reason.stack : 'N/A');
+        document.body.appendChild(errorDiv);
+      });
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
