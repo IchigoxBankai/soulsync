@@ -190,6 +190,19 @@ const FALLBACK_WHO_KNOWS = [
   "What scares me the most?"
 ];
 
+const FALLBACK_NEVER_HAVE_I_EVER = [
+  "Never have I ever stalked someone's profile.",
+  "Never have I ever sent a risky text.",
+  "Never have I ever fallen asleep on a call.",
+  "Never have I ever had a secret crush.",
+  "Never have I ever lied to avoid a date.",
+  "Never have I ever forgotten someone's birthday.",
+  "Never have I ever ignored a message on purpose.",
+  "Never have I ever sung in the shower.",
+  "Never have I ever danced alone.",
+  "Never have I ever talked to myself."
+];
+
 const MASTER_PROMPTS = {
   truth: readTxtFile('truth.txt', FALLBACK_TRUTHS),
   dare: readTxtFile('dare.txt', FALLBACK_DARES),
@@ -200,7 +213,8 @@ const MASTER_PROMPTS = {
   thisOrThat: readTxtFile('thisorthat.txt', FALLBACK_THIS_OR_THAT),
   debate: readTxtFile('debate.txt', FALLBACK_DEBATE),
   ranking: readRankingFile('ranking.txt', FALLBACK_RANKING),
-  whoKnowsMeBetter: readTxtFile('whoknowsmebetter.txt', FALLBACK_WHO_KNOWS)
+  whoKnowsMeBetter: readTxtFile('whoknowsmebetter.txt', FALLBACK_WHO_KNOWS),
+  neverHaveIEver: readTxtFile('neverhaveiever.txt', FALLBACK_NEVER_HAVE_I_EVER)
 };
 
 // Helper to shuffle arrays
@@ -322,7 +336,7 @@ io.on('connection', (socket) => {
         thisOrThat: { questionIndex: 1, prompt: '', answers: {}, matches: 0, differences: 0, step: 'playing' },
         ranking: { questionIndex: 1, category: '', items: [], answers: {}, totalScore: 0, step: 'playing' },
         debate: { questionIndex: 1, prompt: '', answers: {}, agrees: 0, disagrees: 0, step: 'playing' },
-        loveBingo: { tasks: [], boards: {}, bingos: {} }
+        neverHaveIEver: { questionIndex: 1, statements: [], answers: {}, matches: 0, differences: 0, step: 'playing' }
       }
     };
 
@@ -552,10 +566,16 @@ io.on('connection', (socket) => {
         disagrees: 0,
         step: 'playing'
       };
-    } else if (gameName === 'loveBingo') {
-      room.gameStates.loveBingo.tasks = [];
-      room.gameStates.loveBingo.boards = {};
-      room.gameStates.loveBingo.bingos = {};
+    } else if (gameName === 'neverHaveIEver') {
+      const selected = shuffleArray(MASTER_PROMPTS.neverHaveIEver).slice(0, 20);
+      room.gameStates.neverHaveIEver = {
+        statements: selected,
+        questionIndex: 1,
+        answers: {},
+        matches: 0,
+        differences: 0,
+        step: 'playing'
+      };
     }
 
     broadcastRoomUpdate(room.code);
@@ -1232,87 +1252,69 @@ io.on('connection', (socket) => {
     broadcastRoomUpdate(room.code);
   });
 
-  // GAME 8: Love Bingo
-  socket.on('bingo_init', ({ tasks, boards }) => {
-    const { room } = getRoomAndPlayer(socket);
-    if (!room) return;
-
-    room.gameStates.loveBingo.tasks = tasks;
-    room.gameStates.loveBingo.boards = boards; // Map: playerId -> { grid: array, marked: [] }
-    room.gameStates.loveBingo.bingos = {};
-    broadcastRoomUpdate(room.code);
-  });
-
-  socket.on('bingo_mark', ({ index }) => {
+  // GAME: Never Have I Ever
+  socket.on('never_have_submit', ({ choice }) => {
     const { room, player } = getRoomAndPlayer(socket);
     if (!room || !player) return;
 
-    const board = room.gameStates.loveBingo.boards[player.id];
-    if (!board) return;
-
-    // Toggle mark
-    if (board.marked.includes(index)) {
-      board.marked = board.marked.filter(i => i !== index);
-    } else {
-      board.marked.push(index);
+    const state = room.gameStates.neverHaveIEver;
+    if (!state.answers[state.questionIndex]) {
+      state.answers[state.questionIndex] = {};
     }
+    state.answers[state.questionIndex][player.id] = choice;
 
-    // Check for Bingo
-    const size = 5;
-    const marked = new Set(board.marked);
-    let hasBingo = false;
+    const submittedCount = Object.keys(state.answers[state.questionIndex]).length;
+    if (submittedCount >= room.players.length) {
+      const playerIds = Object.keys(state.answers[state.questionIndex]);
+      const isMatch = state.answers[state.questionIndex][playerIds[0]] === state.answers[state.questionIndex][playerIds[1]];
 
-    // Check rows
-    for (let r = 0; r < size; r++) {
-      let rowFull = true;
-      for (let c = 0; c < size; c++) {
-        if (!marked.has(r * size + c)) rowFull = false;
+      if (isMatch) {
+        state.matches += 1;
+        // Award point to both players
+        room.players.forEach(p => p.score += 1);
+      } else {
+        state.differences += 1;
       }
-      if (rowFull) hasBingo = true;
-    }
 
-    // Check columns
-    for (let c = 0; c < size; c++) {
-      let colFull = true;
-      for (let r = 0; r < size; r++) {
-        if (!marked.has(r * size + c)) colFull = false;
-      }
-      if (colFull) hasBingo = true;
-    }
-
-    // Diagonal 1 (\)
-    let diag1Full = true;
-    for (let i = 0; i < size; i++) {
-      if (!marked.has(i * size + i)) diag1Full = false;
-    }
-    if (diag1Full) hasBingo = true;
-
-    // Diagonal 2 (/)
-    let diag2Full = true;
-    for (let i = 0; i < size; i++) {
-      if (!marked.has(i * size + (size - 1 - i))) diag2Full = false;
-    }
-    if (diag2Full) hasBingo = true;
-
-    const hadBingoBefore = room.gameStates.loveBingo.bingos[player.id];
-    room.gameStates.loveBingo.bingos[player.id] = hasBingo;
-
-    // If bingo achieved first time in this game session, award point
-    if (hasBingo && !hadBingoBefore) {
-      player.score += 1;
-      io.to(room.code).emit('bingo_achieved', { playerId: player.id, name: player.name });
+      state.step = 'reveal';
+      
+      io.to(room.code).emit('never_have_revealed', {
+        answers: state.answers[state.questionIndex],
+        match: isMatch
+      });
     }
 
     broadcastRoomUpdate(room.code);
   });
 
-  socket.on('bingo_reset', ({ tasks, boards }) => {
-    const { room, player } = getRoomAndPlayer(socket);
-    if (!room || !player || !player.isHost) return;
+  socket.on('never_have_next', () => {
+    const { room } = getRoomAndPlayer(socket);
+    if (!room) return;
 
-    room.gameStates.loveBingo.tasks = tasks;
-    room.gameStates.loveBingo.boards = boards;
-    room.gameStates.loveBingo.bingos = {};
+    const state = room.gameStates.neverHaveIEver;
+    const nextIndex = state.questionIndex + 1;
+    if (nextIndex > 20) {
+      state.step = 'summary';
+    } else {
+      state.questionIndex = nextIndex;
+      state.step = 'playing';
+    }
+    broadcastRoomUpdate(room.code);
+  });
+
+  socket.on('never_have_reset', () => {
+    const { room } = getRoomAndPlayer(socket);
+    if (!room) return;
+
+    const selected = shuffleArray(MASTER_PROMPTS.neverHaveIEver).slice(0, 20);
+    room.gameStates.neverHaveIEver = {
+      statements: selected,
+      questionIndex: 1,
+      answers: {},
+      matches: 0,
+      differences: 0,
+      step: 'playing'
+    };
     broadcastRoomUpdate(room.code);
   });
 

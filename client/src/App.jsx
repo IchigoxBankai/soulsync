@@ -14,7 +14,7 @@ import { Likely } from './components/games/Likely';
 import { ThisOrThat } from './components/games/ThisOrThat';
 import { Ranking } from './components/games/Ranking';
 import { Debate } from './components/games/Debate';
-import { LoveBingo } from './components/games/LoveBingo';
+import { NeverHaveIEver } from './components/games/NeverHaveIEver';
 import { audioController } from './utils/audio';
 import { Copy, Check, Users, ShieldAlert, ArrowRight, Sparkles } from 'lucide-react';
 
@@ -103,8 +103,8 @@ const MainApp = () => {
         return <Ranking />;
       case 'debate':
         return <Debate />;
-      case 'loveBingo':
-        return <LoveBingo />;
+      case 'neverHaveIEver':
+        return <NeverHaveIEver />;
       default:
         return null;
     }
@@ -343,7 +343,7 @@ const MainApp = () => {
                         { id: 'fastestTap', name: 'Fastest Tap', icon: '🎯', color: 'hover:border-pink-300 hover:shadow-pink-500/10' },
                         { id: 'truthOrDare', name: 'Truth or Dare', icon: '😈', color: 'hover:border-yellow-300 hover:shadow-yellow-500/10' },
                         { id: 'redGreen', name: 'Red or Green Flag', icon: '🚩', color: 'hover:border-pink-300 hover:shadow-pink-500/10' },
-                        { id: 'loveBingo', name: 'Love Bingo', icon: '❤️', color: 'hover:border-yellow-300 hover:shadow-yellow-500/10' }
+                        { id: 'neverHaveIEver', name: 'Never Have I Ever', icon: '🙈', color: 'hover:border-yellow-300 hover:shadow-yellow-500/10' }
                       ].map((game) => {
                         const isDisabled = !player?.isHost;
                         return (
