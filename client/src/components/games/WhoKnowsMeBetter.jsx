@@ -1,97 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { useSocket } from '../../context/SocketContext';
-import { whoKnowsMeBetterQuestions } from '../../data/prompts';
 import { audioController } from '../../utils/audio';
-import { ArrowLeft, Send, Sparkles } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { ArrowLeft, Sparkles, Send, Heart, User } from 'lucide-react';
 
 export const WhoKnowsMeBetter = () => {
   const { room, player, socket, leaveGame } = useSocket();
   const [answerInput, setAnswerInput] = useState('');
-  const [guessInput, setGuessInput] = useState('');
-  const [revealData, setRevealData] = useState(null); // { isCorrect, answererSecret, guess }
 
   const gameState = room?.gameStates?.whoKnowsMeBetter;
-  const question = gameState?.question;
-  const answererId = gameState?.answererId;
-  const step = gameState?.step; // 'answering' | 'guessing' | 'reveal'
+  const questions = gameState?.questions || [];
+  const questionIndex = gameState?.questionIndex || 1;
+  const currentRound = gameState?.round || 1;
+  const answers = gameState?.answers || { round1: {}, round2: {} };
+  const step = gameState?.step || 'playing'; // 'playing' | 'summary'
 
-  const isAnswerer = player?.id === answererId;
-  const answererName = room?.players.find(p => p.id === answererId)?.name || 'Answerer';
-  const guesserName = room?.players.find(p => p.id !== answererId)?.name || 'Guesser';
-
-  // Init question if no question set and player is Answerer
+  // Sync inputs on questionIndex or round updates
   useEffect(() => {
-    if (isAnswerer && !question) {
-      loadNewQuestion();
-    }
-  }, [isAnswerer, question]);
+    setAnswerInput('');
+  }, [questionIndex, currentRound]);
 
-  // Listen for results
-  useEffect(() => {
-    if (!socket) return;
+  if (!room || !player || !gameState) return null;
 
-    const handleResult = (data) => {
-      setRevealData(data);
-      if (data.isCorrect) {
-        audioController.playWin();
-        confetti({
-          particleCount: 80,
-          spread: 50,
-          origin: { y: 0.6 }
-        });
-      } else {
-        audioController.playClick();
-      }
-    };
+  const player1 = room.players[0] || { name: 'Player 1', id: '1' };
+  const player2 = room.players[1] || { name: 'Player 2', id: '2' };
 
-    socket.on('wymb_result', handleResult);
-    return () => {
-      socket.off('wymb_result', handleResult);
-    };
-  }, [socket]);
+  // Determine active guesser & active subject based on currentRound
+  // Round 1: Player 2 (guesser) guesses about Player 1 (subject)
+  // Round 2: Player 1 (guesser) guesses about Player 2 (subject)
+  const isRound1 = currentRound === 1;
+  const guesser = isRound1 ? player2 : player1;
+  const subject = isRound1 ? player1 : player2;
 
-  // Reset inputs when step resets to answering
-  useEffect(() => {
-    if (step === 'answering') {
-      setAnswerInput('');
-      setGuessInput('');
-      setRevealData(null);
-    }
-  }, [step]);
+  const isActiveGuesser = player.id === guesser.id;
+  const currentQuestion = questions[questionIndex - 1] || 'Loading question...';
 
-  const loadNewQuestion = () => {
-    const history = gameState?.history || [];
-    const available = whoKnowsMeBetterQuestions.filter(q => !history.includes(q));
-    const pool = available.length > 0 ? available : whoKnowsMeBetterQuestions;
-    const randomQ = pool[Math.floor(Math.random() * pool.length)];
-
-    socket.emit('wymb_init_question', { question: randomQ });
-    audioController.playClick();
-  };
-
-  const handleAnswerSubmit = (e) => {
-    e.preventDefault();
+  const handleNext = (e) => {
+    if (e) e.preventDefault();
     if (!answerInput.trim()) return;
 
-    socket.emit('wymb_submit_answer', { secret: answerInput });
+    socket.emit('who_knows_submit', { answer: answerInput.trim() });
     audioController.playClick();
   };
 
-  const handleGuessSubmit = (e) => {
-    e.preventDefault();
-    if (!guessInput.trim()) return;
-
-    socket.emit('wymb_submit_guess', { guess: guessInput });
+  const handleRestart = () => {
+    socket.emit('who_knows_reset');
     audioController.playClick();
   };
-
-  const handleNextRound = () => {
-    socket.emit('wymb_next_round');
-    audioController.playClick();
-  };
-
-  if (!room || !player) return null;
 
   return (
     <div className="w-full max-w-lg mx-auto p-4 flex flex-col gap-6 select-none animate-in fade-in zoom-in-95 duration-200">
@@ -112,180 +66,140 @@ export const WhoKnowsMeBetter = () => {
         <div className="w-8 h-8" />
       </div>
 
-      {/* Main Panel */}
-      <div className="glass rounded-3xl p-6 border border-pink-200/20 shadow-xl flex flex-col items-center gap-6 text-center">
-        {/* Role Banner */}
-        <div className="flex items-center justify-center gap-2">
-          {isAnswerer ? (
-            <span className="text-xs font-bold px-3 py-1 bg-pink-500/10 text-pink-600 dark:text-pink-400 rounded-full">
-              👑 You are the Answerer!
-            </span>
-          ) : (
-            <span className="text-xs font-bold px-3 py-1 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 rounded-full">
-              🔍 You are guessing {answererName}'s mind!
-            </span>
-          )}
-        </div>
+      {/* Main Board Container */}
+      <div className="glass rounded-3xl p-6 border border-pink-200/20 shadow-xl flex flex-col gap-6 text-center">
+        {step === 'playing' && (
+          <div className="w-full flex flex-col gap-6 animate-in zoom-in-95 duration-200">
+            {/* Header info */}
+            <div className="flex flex-col gap-1 px-2 border-b border-pink-100/10 pb-3">
+              <span className="text-xs font-black text-pink-500 uppercase tracking-wider">
+                Round {currentRound}
+              </span>
+              <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                {guesser.name} is answering about {subject.name}
+              </span>
+              <span className="text-xs font-semibold text-slate-400 mt-1">
+                Question {questionIndex} / 10
+              </span>
+            </div>
 
-        {!question ? (
-          <div className="flex flex-col items-center gap-3 py-8">
-            <div className="animate-spin text-4xl">💭</div>
-            <span className="text-sm text-slate-500 dark:text-slate-400">
-              {isAnswerer ? 'Generating your question...' : `Waiting for ${answererName} to start round...`}
-            </span>
-          </div>
-        ) : (
-          <div className="w-full flex flex-col gap-6">
-            {/* Steps Rendering */}
+            {/* Question display */}
+            <div className="p-8 bg-pink-500/5 dark:bg-black/20 rounded-2xl border border-pink-200/10 flex flex-col items-center justify-center min-h-[120px] shadow-inner">
+              <p className="text-xl font-bold text-slate-800 dark:text-slate-100 break-words leading-relaxed">
+                "{currentQuestion}"
+              </p>
+            </div>
 
-            {step === 'answering' && (
-              <div className="flex flex-col gap-4 animate-in zoom-in-95 duration-200">
-                {isAnswerer ? (
-                  <>
-                    <div>
-                      <span className="text-[10px] tracking-wider uppercase font-bold text-pink-500">Your Secret Question</span>
-                      <h2 className="text-xl font-bold text-slate-800 dark:text-white mt-1">
-                        {question}
-                      </h2>
-                    </div>
-
-                    <form onSubmit={handleAnswerSubmit} className="flex flex-col gap-3">
-                      <input
-                        type="text"
-                        value={answerInput}
-                        onChange={(e) => setAnswerInput(e.target.value)}
-                        placeholder="Type your secret answer..."
-                        maxLength={40}
-                        className="glass-input w-full px-4 py-3 rounded-2xl text-center font-semibold text-slate-800 dark:text-white"
-                        autoFocus
-                      />
-                      <button
-                        type="submit"
-                        disabled={!answerInput.trim()}
-                        className="bg-gradient-to-r from-pink-500 to-yellow-500 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
-                      >
-                        <Send size={18} />
-                        Submit Answer Secretly
-                      </button>
-                    </form>
-                  </>
-                ) : (
-                  <div className="flex flex-col items-center gap-4 py-8">
-                    <span className="text-5xl animate-pulse">🤫</span>
-                    <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                      {answererName} is answering their secret question...
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {step === 'guessing' && (
-              <div className="flex flex-col gap-4 animate-in zoom-in-95 duration-200">
-                {!isAnswerer ? (
-                  <>
-                    <div>
-                      <span className="text-[10px] tracking-wider uppercase font-bold text-yellow-500">The Question</span>
-                      <h2 className="text-xl font-bold text-slate-800 dark:text-white mt-1">
-                        {question}
-                      </h2>
-                    </div>
-
-                    <form onSubmit={handleGuessSubmit} className="flex flex-col gap-3">
-                      <input
-                        type="text"
-                        value={guessInput}
-                        onChange={(e) => setGuessInput(e.target.value)}
-                        placeholder={`What is ${answererName}'s answer?`}
-                        maxLength={40}
-                        className="glass-input w-full px-4 py-3 rounded-2xl text-center font-semibold text-slate-800 dark:text-white"
-                        autoFocus
-                      />
-                      <button
-                        type="submit"
-                        disabled={!guessInput.trim()}
-                        className="bg-gradient-to-r from-yellow-500 to-pink-500 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
-                      >
-                        <Send size={18} />
-                        Submit Guess
-                      </button>
-                    </form>
-                  </>
-                ) : (
-                  <div className="flex flex-col items-center gap-4 py-8">
-                    <span className="text-5xl animate-pulse">🤔</span>
-                    <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                      You answered! Waiting for {guesserName} to guess...
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {step === 'reveal' && revealData && (
-              <div className="flex flex-col gap-6 animate-in zoom-in-95 duration-200">
-                <div>
-                  <span className="text-[10px] tracking-wider uppercase font-bold text-pink-500">The Question</span>
-                  <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200 mt-1">
-                    {question}
-                  </h2>
-                </div>
-
-                <div className="flex flex-col items-center gap-2">
-                  {revealData.isCorrect ? (
-                    <div className="flex flex-col items-center gap-1.5">
-                      <span className="text-5xl animate-bounce">🧠</span>
-                      <h3 className="text-2xl font-black text-emerald-500 flex items-center gap-1">
-                        <Sparkles size={20} className="text-emerald-500 animate-spin" />
-                        Guessed Correctly!
-                        <Sparkles size={20} className="text-emerald-500 animate-spin" />
-                      </h3>
-                      <span className="text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded-full">
-                        {guesserName} gets +1 Point!
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-1.5">
-                      <span className="text-5xl">🥺</span>
-                      <h3 className="text-2xl font-black text-rose-500">
-                        Mismatch!
-                      </h3>
-                      <span className="text-xs text-slate-400 font-semibold">
-                        Better luck next round!
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Show values */}
-                <div className="grid grid-cols-2 gap-4 mt-2">
-                  <div className="flex flex-col items-center p-4 glass rounded-2xl border border-pink-200/10">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase truncate max-w-full">
-                      {answererName}'s Truth
-                    </span>
-                    <span className="text-lg font-black text-slate-700 dark:text-slate-200 mt-1 uppercase break-all">
-                      {revealData.answererSecret}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-col items-center p-4 glass rounded-2xl border border-pink-200/10">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase truncate max-w-full">
-                      {guesserName}'s Guess
-                    </span>
-                    <span className="text-lg font-black text-slate-700 dark:text-slate-200 mt-1 uppercase break-all">
-                      {revealData.guess}
-                    </span>
-                  </div>
-                </div>
-
+            {/* Input / Waiting states */}
+            {isActiveGuesser ? (
+              <form onSubmit={handleNext} className="flex flex-col gap-4 w-full">
+                <input
+                  type="text"
+                  value={answerInput}
+                  onChange={(e) => setAnswerInput(e.target.value)}
+                  placeholder={`What is ${subject.name}'s answer?`}
+                  maxLength={50}
+                  className="glass-input w-full px-5 py-4 rounded-2xl text-center font-bold text-base text-slate-800 dark:text-white border border-pink-200/10 focus:border-pink-500 outline-none transition-all shadow-sm"
+                  autoFocus
+                />
+                
                 <button
-                  onClick={handleNextRound}
-                  className="bg-gradient-to-r from-pink-500 to-yellow-500 text-white font-bold py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform shadow-md mt-4"
+                  type="submit"
+                  disabled={!answerInput.trim()}
+                  className="bg-gradient-to-r from-pink-500 to-yellow-500 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold py-3.5 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md w-full"
                 >
-                  Switch Roles & Next Round
+                  <Send size={18} />
+                  Next Question
                 </button>
+              </form>
+            ) : (
+              <div className="flex flex-col items-center gap-3 py-6 bg-pink-500/5 rounded-2xl p-4 border border-pink-200/5">
+                <div className="flex gap-1.5 justify-center">
+                  <span className="w-3 h-3 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-3 h-3 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-3 h-3 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+                <span className="text-sm font-bold text-pink-500 animate-pulse">
+                  {guesser.name} is typing...
+                </span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                  You must watch silently & cannot help!
+                </span>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Summary Screen */}
+        {step === 'summary' && (
+          <div className="w-full flex flex-col gap-6 animate-in zoom-in-95 duration-200 py-2">
+            <div className="flex flex-col items-center gap-1.5">
+              <span className="text-5xl animate-pulse">🎉</span>
+              <h3 className="text-2xl font-black text-slate-800 dark:text-white mt-1">
+                Game Finished!
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                Time to compare and discuss your answers side by side!
+              </p>
+            </div>
+
+            {/* Answer Lists Comparison */}
+            <div className="flex flex-col gap-4 max-h-[350px] overflow-y-auto pr-1 text-left mt-2">
+              {questions.map((q, idx) => {
+                const ans1 = answers.round1[idx + 1] || 'No answer';
+                const ans2 = answers.round2[idx + 1] || 'No answer';
+                return (
+                  <div key={idx} className="p-4 glass rounded-2xl border border-pink-200/10 flex flex-col gap-2.5 shadow-sm">
+                    <span className="text-xs font-bold text-pink-500 flex items-center gap-1">
+                      <Sparkles size={12} />
+                      Question {idx + 1}
+                    </span>
+                    <p className="text-sm font-extrabold text-slate-800 dark:text-slate-100">
+                      "{q}"
+                    </p>
+                    
+                    <div className="grid grid-cols-2 gap-3 mt-1 pt-2.5 border-t border-slate-100/10">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">
+                          Round 1 ({player2.name}'s Guess)
+                        </span>
+                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 break-words">
+                          {ans1}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">
+                          Round 2 ({player1.name}'s Guess)
+                        </span>
+                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 break-words">
+                          {ans2}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Bottom options */}
+            <div className="flex flex-col sm:flex-row gap-3 mt-4 w-full">
+              <button
+                onClick={handleRestart}
+                className="flex-1 py-3 bg-pink-500/10 hover:bg-pink-500/20 border border-pink-200/20 text-pink-500 font-bold rounded-2xl active:scale-95 transition-transform"
+              >
+                Play Again
+              </button>
+              <button
+                onClick={() => {
+                  leaveGame();
+                  audioController.playClick();
+                }}
+                className="flex-1 py-3 bg-gradient-to-r from-pink-500 to-yellow-500 text-white font-bold rounded-2xl active:scale-95 transition-transform shadow-md"
+              >
+                Back Home
+              </button>
+            </div>
           </div>
         )}
       </div>

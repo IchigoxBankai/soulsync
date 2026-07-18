@@ -177,6 +177,19 @@ const FALLBACK_RANKING = [
   }
 ];
 
+const FALLBACK_WHO_KNOWS = [
+  "What is my favorite color?",
+  "What is my favorite animal?",
+  "What is my favorite season?",
+  "What is my dream vacation?",
+  "What is my dream job?",
+  "What is my favorite drink?",
+  "What is my favorite snack?",
+  "What is my favorite dessert?",
+  "What is my favorite emoji?",
+  "What scares me the most?"
+];
+
 const MASTER_PROMPTS = {
   truth: readTxtFile('truth.txt', FALLBACK_TRUTHS),
   dare: readTxtFile('dare.txt', FALLBACK_DARES),
@@ -186,7 +199,8 @@ const MASTER_PROMPTS = {
   likely: readTxtFile('likely.txt', FALLBACK_LIKELY),
   thisOrThat: readTxtFile('thisorthat.txt', FALLBACK_THIS_OR_THAT),
   debate: readTxtFile('debate.txt', FALLBACK_DEBATE),
-  ranking: readRankingFile('ranking.txt', FALLBACK_RANKING)
+  ranking: readRankingFile('ranking.txt', FALLBACK_RANKING),
+  whoKnowsMeBetter: readTxtFile('whoknowsmebetter.txt', FALLBACK_WHO_KNOWS)
 };
 
 // Helper to shuffle arrays
@@ -300,7 +314,7 @@ io.on('connection', (socket) => {
         sameBrain: { prompt: '', answers: {}, history: [] },
         wouldYouRather: { question: null, choices: {}, history: [] },
         secretMessage: { messages: {}, revealed: false },
-        whoKnowsMeBetter: { question: '', answererId: '', answererSecret: '', guess: '', step: 'answering', history: [] },
+        whoKnowsMeBetter: { questions: [], questionIndex: 1, round: 1, answers: { round1: {}, round2: {} }, step: 'playing' },
         fastestTap: { round: 1, results: {}, scores: {}, state: 'waiting' },
         truthOrDare: { category: '', type: '', prompt: '', targetPlayerId: '' },
         redGreen: { questionIndex: 1, situation: '', answers: {}, matches: 0, differences: 0, step: 'playing' },
@@ -462,12 +476,17 @@ io.on('connection', (socket) => {
       room.gameStates.secretMessage.messages = {};
       room.gameStates.secretMessage.revealed = false;
     } else if (gameName === 'whoKnowsMeBetter') {
-      room.gameStates.whoKnowsMeBetter.question = '';
-      room.gameStates.whoKnowsMeBetter.answererSecret = '';
-      room.gameStates.whoKnowsMeBetter.guess = '';
-      room.gameStates.whoKnowsMeBetter.step = 'answering';
-      // Pick host or random first player as initial answerer
-      room.gameStates.whoKnowsMeBetter.answererId = room.players[0]?.id || '';
+      const selected = shuffleArray(MASTER_PROMPTS.whoKnowsMeBetter).slice(0, 10);
+      room.gameStates.whoKnowsMeBetter = {
+        questions: selected,
+        questionIndex: 1,
+        round: 1,
+        answers: {
+          round1: {},
+          round2: {}
+        },
+        step: 'playing'
+      };
     } else if (gameName === 'fastestTap') {
       room.gameStates.fastestTap.round = 1;
       room.gameStates.fastestTap.results = {};
@@ -661,69 +680,51 @@ io.on('connection', (socket) => {
   });
 
   // GAME 4: Who Knows Me Better
-  socket.on('wymb_init_question', ({ question }) => {
-    const { room } = getRoomAndPlayer(socket);
-    if (!room) return;
-    room.gameStates.whoKnowsMeBetter.question = question;
-    room.gameStates.whoKnowsMeBetter.answererSecret = '';
-    room.gameStates.whoKnowsMeBetter.guess = '';
-    room.gameStates.whoKnowsMeBetter.step = 'answering';
-    if (!room.gameStates.whoKnowsMeBetter.history.includes(question)) {
-      room.gameStates.whoKnowsMeBetter.history.push(question);
-    }
-    broadcastRoomUpdate(room.code);
-  });
-
-  socket.on('wymb_submit_answer', ({ secret }) => {
+  socket.on('who_knows_submit', ({ answer }) => {
     const { room, player } = getRoomAndPlayer(socket);
     if (!room || !player) return;
 
-    if (player.id !== room.gameStates.whoKnowsMeBetter.answererId) return;
-
-    room.gameStates.whoKnowsMeBetter.answererSecret = secret.trim();
-    room.gameStates.whoKnowsMeBetter.step = 'guessing';
-    broadcastRoomUpdate(room.code);
-  });
-
-  socket.on('wymb_submit_guess', ({ guess }) => {
-    const { room, player } = getRoomAndPlayer(socket);
-    if (!room || !player) return;
-
-    if (player.id === room.gameStates.whoKnowsMeBetter.answererId) return;
-
-    room.gameStates.whoKnowsMeBetter.guess = guess.trim();
-    room.gameStates.whoKnowsMeBetter.step = 'reveal';
-
-    // Award point to guesser if correct (case-insensitive check)
-    const secret = room.gameStates.whoKnowsMeBetter.answererSecret.toLowerCase();
-    const guessVal = guess.trim().toLowerCase();
-    const isCorrect = secret === guessVal;
-
-    if (isCorrect) {
-      player.score += 1;
-    }
-
-    io.to(room.code).emit('wymb_result', {
-      isCorrect,
-      answererSecret: room.gameStates.whoKnowsMeBetter.answererSecret,
-      guess: room.gameStates.whoKnowsMeBetter.guess
-    });
-  });
-
-  socket.on('wymb_next_round', () => {
-    const { room } = getRoomAndPlayer(socket);
-    if (!room) return;
-
-    // Swap answerer
-    const currentAnswererIndex = room.players.findIndex(p => p.id === room.gameStates.whoKnowsMeBetter.answererId);
-    const nextAnswererIndex = (currentAnswererIndex + 1) % room.players.length;
+    const state = room.gameStates.whoKnowsMeBetter;
     
-    room.gameStates.whoKnowsMeBetter.answererId = room.players[nextAnswererIndex]?.id || '';
-    room.gameStates.whoKnowsMeBetter.question = '';
-    room.gameStates.whoKnowsMeBetter.answererSecret = '';
-    room.gameStates.whoKnowsMeBetter.guess = '';
-    room.gameStates.whoKnowsMeBetter.step = 'answering';
+    // In round 1, guesser is Player 2 (room.players[1])
+    // In round 2, guesser is Player 1 (room.players[0])
+    const player1 = room.players[0] || { id: '1' };
+    const player2 = room.players[1] || { id: '2' };
+    const guesser = state.round === 1 ? player2 : player1;
 
+    // Verify only the active guesser submitted the answer
+    if (player.id !== guesser.id) return;
+
+    state.answers['round' + state.round][state.questionIndex] = answer;
+
+    if (state.questionIndex < 10) {
+      state.questionIndex += 1;
+    } else {
+      if (state.round === 1) {
+        state.round = 2;
+        state.questionIndex = 1;
+      } else {
+        state.step = 'summary';
+      }
+    }
+    broadcastRoomUpdate(room.code);
+  });
+
+  socket.on('who_knows_reset', () => {
+    const { room } = getRoomAndPlayer(socket);
+    if (!room) return;
+
+    const selected = shuffleArray(MASTER_PROMPTS.whoKnowsMeBetter).slice(0, 10);
+    room.gameStates.whoKnowsMeBetter = {
+      questions: selected,
+      questionIndex: 1,
+      round: 1,
+      answers: {
+        round1: {},
+        round2: {}
+      },
+      step: 'playing'
+    };
     broadcastRoomUpdate(room.code);
   });
 
