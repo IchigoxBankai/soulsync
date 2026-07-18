@@ -933,9 +933,10 @@ io.on('connection', (socket) => {
         answers: room.gameStates.redGreen.answers,
         match: isMatch
       });
-    } else {
-      broadcastRoomUpdate(room.code);
     }
+    
+    // Always broadcast update so both clients switch step state!
+    broadcastRoomUpdate(room.code);
   });
 
   socket.on('red_green_next', () => {
@@ -997,9 +998,10 @@ io.on('connection', (socket) => {
         answers: room.gameStates.likely.answers,
         match: isMatch
       });
-    } else {
-      broadcastRoomUpdate(room.code);
     }
+    
+    // Always broadcast update so both clients switch step state!
+    broadcastRoomUpdate(room.code);
   });
 
   socket.on('likely_next', () => {
@@ -1060,9 +1062,10 @@ io.on('connection', (socket) => {
         answers: room.gameStates.thisOrThat.answers,
         match: isMatch
       });
-    } else {
-      broadcastRoomUpdate(room.code);
     }
+    
+    // Always broadcast update so both clients switch step state!
+    broadcastRoomUpdate(room.code);
   });
 
   socket.on('this_or_that_next', () => {
@@ -1125,9 +1128,10 @@ io.on('connection', (socket) => {
       io.to(room.code).emit('ranking_revealed', {
         answers: room.gameStates.ranking.answers
       });
-    } else {
-      broadcastRoomUpdate(room.code);
     }
+    
+    // Always broadcast update so both clients switch step state!
+    broadcastRoomUpdate(room.code);
   });
 
   socket.on('ranking_next', () => {
@@ -1188,9 +1192,10 @@ io.on('connection', (socket) => {
         answers: room.gameStates.debate.answers,
         match: isMatch
       });
-    } else {
-      broadcastRoomUpdate(room.code);
     }
+    
+    // Always broadcast update so both clients switch step state!
+    broadcastRoomUpdate(room.code);
   });
 
   socket.on('debate_next', () => {
