@@ -4,7 +4,7 @@ import { Sun, Moon, Volume2, VolumeX, LogOut, Edit2, Check } from 'lucide-react'
 import { audioController } from '../utils/audio';
 
 export const Navbar = () => {
-  const { room, player, leaveRoom, changeNickname, connectionStatus } = useSocket();
+  const { room, player, leaveRoom, leaveGame, changeNickname, connectionStatus } = useSocket();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
@@ -152,16 +152,28 @@ export const Navbar = () => {
           {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
         </button>
 
-        {room && (
+        {room && room.currentGame ? (
+          <button
+            onClick={() => {
+              leaveGame();
+              audioController.playClick();
+            }}
+            className="p-2 rounded-full glass hover:bg-rose-500/20 border border-rose-200/30 text-rose-500 dark:text-rose-400 hover:scale-105 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 text-xs font-semibold px-3"
+            title="Leave Current Game"
+          >
+            <LogOut size={14} />
+            <span>Leave Game</span>
+          </button>
+        ) : room ? (
           <button
             onClick={handleLeave}
             className="p-2 rounded-full glass hover:bg-rose-500/20 border border-rose-200/30 text-rose-500 dark:text-rose-400 hover:scale-105 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 text-xs font-semibold px-3"
             title="Leave Room"
           >
             <LogOut size={14} />
-            <span className="hidden sm:inline">Leave</span>
+            <span>Leave Room</span>
           </button>
-        )}
+        ) : null}
       </div>
     </nav>
   );
