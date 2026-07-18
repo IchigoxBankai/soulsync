@@ -75,19 +75,15 @@ export const GuessMyMood = () => {
     <div className="w-full max-w-lg mx-auto p-4 flex flex-col gap-6 select-none animate-in fade-in zoom-in-95 duration-200">
       {/* Game Header */}
       <div className="flex items-center justify-between">
-        {player?.isHost ? (
-          <button
-            onClick={() => {
-              leaveGame();
-              audioController.playClick();
-            }}
-            className="p-2 rounded-full glass hover:bg-white/20 text-slate-600 dark:text-slate-300 hover:scale-105 active:scale-95 transition-all shadow-sm"
-          >
-            <ArrowLeft size={16} />
-          </button>
-        ) : (
-          <div className="w-8 h-8" />
-        )}
+        <button
+          onClick={() => {
+            leaveGame();
+            audioController.playClick();
+          }}
+          className="p-2 rounded-full glass hover:bg-white/20 text-slate-600 dark:text-slate-300 hover:scale-105 active:scale-95 transition-all shadow-sm"
+        >
+          <ArrowLeft size={16} />
+        </button>
         <span className="font-extrabold text-xl bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
           🎭 Guess My Mood
         </span>

@@ -278,10 +278,10 @@ io.on('connection', (socket) => {
     broadcastRoomUpdate(room.code);
   });
 
-  // Leave active game (back to menu) (Host only)
+  // Leave active game (back to menu) (Either player can trigger)
   socket.on('leave_game', () => {
     const { room, player } = getRoomAndPlayer(socket);
-    if (!room || !player || !player.isHost) return;
+    if (!room || !player) return;
 
     room.currentGame = null;
     
