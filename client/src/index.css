@@ -6,8 +6,10 @@
 :root {
   --theme-p1: #ff2a55; /* Sunset Pink */
   --theme-p1-dark: #e60e3a;
+  --theme-p1-text: #be185d; /* High-contrast Pink-700 text for light mode */
   --theme-p2: #eab308; /* Sunset Yellow */
   --theme-p2-dark: #ca8a04;
+  --theme-p2-text: #a16207; /* High-contrast Yellow-700 text for light mode */
   --theme-bg-1: #fbcfe8;
   --theme-bg-2: #fef08a;
   --theme-bg-3: #ffccd5;
@@ -18,11 +20,18 @@
   --theme-dark-bg-4: #221d03;
 }
 
-[data-theme="midnight"] {
+html.dark {
+  --theme-p1-text: #ff2a55; /* Bright pink text for dark mode */
+  --theme-p2-text: #fde047; /* Bright yellow text for dark mode */
+}
+
+html[data-theme="midnight"] {
   --theme-p1: #ff2a55; /* Midnight Pink */
   --theme-p1-dark: #e60e3a;
+  --theme-p1-text: #be185d; /* High-contrast Pink-700 text for light mode */
   --theme-p2: #8b5cf6; /* Midnight Purple */
   --theme-p2-dark: #7c3aed;
+  --theme-p2-text: #6d28d9; /* High-contrast Purple-700 text for light mode */
   --theme-bg-1: #ff9eb5;
   --theme-bg-2: #e0c3fc;
   --theme-bg-3: #ffccd5;
@@ -33,11 +42,18 @@
   --theme-dark-bg-4: #361730;
 }
 
-[data-theme="forest"] {
+html.dark[data-theme="midnight"] {
+  --theme-p1-text: #ff2a55;
+  --theme-p2-text: #c084fc;
+}
+
+html[data-theme="forest"] {
   --theme-p1: #10b981; /* Forest Emerald */
   --theme-p1-dark: #047857;
+  --theme-p1-text: #047857;
   --theme-p2: #f59e0b; /* Forest Gold */
   --theme-p2-dark: #d97706;
+  --theme-p2-text: #b45309;
   --theme-bg-1: #a7f3d0;
   --theme-bg-2: #fde68a;
   --theme-bg-3: #d1fae5;
@@ -48,11 +64,18 @@
   --theme-dark-bg-4: #451a03;
 }
 
-[data-theme="ocean"] {
+html.dark[data-theme="forest"] {
+  --theme-p1-text: #34d399;
+  --theme-p2-text: #fbbf24;
+}
+
+html[data-theme="ocean"] {
   --theme-p1: #06b6d4; /* Ocean Cyan */
   --theme-p1-dark: #0891b2;
+  --theme-p1-text: #0369a1;
   --theme-p2: #3b82f6; /* Ocean Blue */
   --theme-p2-dark: #2563eb;
+  --theme-p2-text: #1d4ed8;
   --theme-bg-1: #a5f3fc;
   --theme-bg-2: #bfdbfe;
   --theme-bg-3: #cffafe;
@@ -61,6 +84,11 @@
   --theme-dark-bg-2: #1e3a8a;
   --theme-dark-bg-3: #083344;
   --theme-dark-bg-4: #172554;
+}
+
+html.dark[data-theme="ocean"] {
+  --theme-p1-text: #38bdf8;
+  --theme-p2-text: #60a5fa;
 }
 
 @theme {
@@ -101,6 +129,20 @@
 
 body {
   @apply font-outfit antialiased transition-colors duration-300 text-slate-800 dark:text-slate-100;
+}
+
+/* Accessibility contrast overrides for text elements in light mode */
+.text-pink-500 {
+  color: var(--theme-p1-text) !important;
+}
+.text-yellow-500 {
+  color: var(--theme-p2-text) !important;
+}
+.text-pink-600 {
+  color: var(--theme-p1-text) !important;
+}
+.text-yellow-600 {
+  color: var(--theme-p2-text) !important;
 }
 
 /* Background Gradients */
