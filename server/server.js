@@ -9,8 +9,11 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Paths to soulsyncgames txt files
-const gamesFolderPath = path.join(__dirname, '../soulsyncgames');
+// Paths to soulsyncgames txt files (supports both lowercase and capitalized naming on Linux/Render)
+let gamesFolderPath = path.join(__dirname, '../soulsyncgames');
+if (!fs.existsSync(gamesFolderPath)) {
+  gamesFolderPath = path.join(__dirname, '../SoulSyncGames');
+}
 
 // Load custom questions
 function readTxtFile(fileName, fallbackArray) {
