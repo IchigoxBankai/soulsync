@@ -4,6 +4,101 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Paths to soulsyncgames txt files
+const gamesFolderPath = path.join(__dirname, '../soulsyncgames');
+
+// Load custom questions
+function readTxtFile(fileName, fallbackArray) {
+  try {
+    const filePath = path.join(gamesFolderPath, fileName);
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath, 'utf-8');
+      const lines = content.split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+      if (lines.length > 0) {
+        console.log(`[SOULSYNC GAMES] Loaded ${lines.length} prompts from ${fileName}`);
+        return lines;
+      }
+    }
+  } catch (err) {
+    console.error(`Error reading ${fileName}:`, err);
+  }
+  console.log(`[SOULSYNC GAMES] Using fallback prompts for ${fileName}`);
+  return fallbackArray;
+}
+
+const FALLBACK_TRUTHS = [
+  "What was your first thought about me?",
+  "What do you like most about me?",
+  "What is your dream date?",
+  "What nickname would you give me?",
+  "Do you believe in soulmates?"
+];
+const FALLBACK_DARES = [
+  "Send me your cutest selfie.",
+  "Say three nice things about me.",
+  "Call me by a cute nickname.",
+  "Do your cutest face.",
+  "Make a heart with your hands."
+];
+const FALLBACK_WYR = [
+  "Would you rather cuddle or kiss?",
+  "Would you rather text all day or call all night?",
+  "Would you rather watch a movie or go on a date?",
+  "Would you rather stay home or travel together?",
+  "Would you rather cook together or eat outside?"
+];
+const FALLBACK_SAME_BRAIN = [
+  "Who says 'I love you' first?",
+  "Who gets jealous first?",
+  "Who apologizes first?",
+  "Who falls asleep first?",
+  "Who texts first?"
+];
+
+const MASTER_PROMPTS = {
+  truth: readTxtFile('truth.txt', FALLBACK_TRUTHS),
+  dare: readTxtFile('dare.txt', FALLBACK_DARES),
+  wyr: readTxtFile('soulsync-wouldurather.txt', FALLBACK_WYR),
+  sameBrain: readTxtFile('same brain.txt', FALLBACK_SAME_BRAIN)
+};
+
+// Helper to shuffle arrays
+function shuffleArray(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// Get next non-repeating prompt from pool
+function getNextPrompt(room, type) {
+  if (!room.promptPools) {
+    room.promptPools = {
+      truth: shuffleArray(MASTER_PROMPTS.truth),
+      dare: shuffleArray(MASTER_PROMPTS.dare),
+      wyr: shuffleArray(MASTER_PROMPTS.wyr),
+      sameBrain: shuffleArray(MASTER_PROMPTS.sameBrain)
+    };
+  }
+
+  let pool = room.promptPools[type];
+  if (!pool || pool.length === 0) {
+    console.log(`[SOULSYNC GAMES] Room ${room.code} prompt pool for ${type} exhausted. Replenishing and shuffling.`);
+    pool = shuffleArray(MASTER_PROMPTS[type]);
+    room.promptPools[type] = pool;
+  }
+
+  return pool.pop();
+}
 
 const app = express();
 app.use(cors());
@@ -294,15 +389,14 @@ io.on('connection', (socket) => {
     broadcastRoomUpdate(room.code);
   });
 
-  // GAME 1: Same Brain
-  socket.on('same_brain_init_prompt', ({ prompt }) => {
+  // GAME 1: Same Brain (Custom prompt selection from deck)
+  socket.on('same_brain_init_prompt', () => {
     const { room } = getRoomAndPlayer(socket);
     if (!room) return;
+    
+    const prompt = getNextPrompt(room, 'sameBrain');
     room.gameStates.sameBrain.prompt = prompt;
     room.gameStates.sameBrain.answers = {};
-    if (!room.gameStates.sameBrain.history.includes(prompt)) {
-      room.gameStates.sameBrain.history.push(prompt);
-    }
     broadcastRoomUpdate(room.code);
   });
 
@@ -335,15 +429,14 @@ io.on('connection', (socket) => {
     }
   });
 
-  // GAME 2: Would You Rather
-  socket.on('wyr_init_question', ({ question }) => {
+  // GAME 2: Would You Rather (Custom question selection from deck)
+  socket.on('wyr_init_question', () => {
     const { room } = getRoomAndPlayer(socket);
     if (!room) return;
-    room.gameStates.wouldYouRather.question = question;
+    
+    const text = getNextPrompt(room, 'wyr');
+    room.gameStates.wouldYouRather.question = { text, cat: 'custom' };
     room.gameStates.wouldYouRather.choices = {};
-    if (!room.gameStates.wouldYouRather.history.includes(question.text)) {
-      room.gameStates.wouldYouRather.history.push(question.text);
-    }
     broadcastRoomUpdate(room.code);
   });
 
@@ -615,10 +708,17 @@ io.on('connection', (socket) => {
     broadcastRoomUpdate(room.code);
   });
 
-  // GAME 6: Truth or Dare
-  socket.on('truth_or_dare_spin', ({ category, type, prompt, targetPlayerId }) => {
+  // GAME 6: Truth or Dare (Custom prompt selection from deck)
+  socket.on('truth_or_dare_spin', () => {
     const { room } = getRoomAndPlayer(socket);
     if (!room) return;
+
+    const type = Math.random() > 0.5 ? 'truth' : 'dare';
+    const prompt = getNextPrompt(room, type);
+    const category = 'Custom';
+    
+    const targetPlayer = room.players[Math.floor(Math.random() * room.players.length)];
+    const targetPlayerId = targetPlayer.id;
 
     // Trigger spin animation on client
     io.to(room.code).emit('truth_or_dare_spinned', {
@@ -856,9 +956,6 @@ io.on('connection', (socket) => {
     socketToRoom.delete(socket.id);
   });
 });
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Serve built React files if they exist
 const distPath = path.join(__dirname, '../client/dist');
