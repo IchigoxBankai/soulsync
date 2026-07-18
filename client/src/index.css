@@ -12,16 +12,16 @@
   --color-pink-800: #a00627;
   --color-pink-900: #850a24;
 
-  --color-purple-50: #f5f3ff;
-  --color-purple-100: #ede9fe;
-  --color-purple-200: #ddd6fe;
-  --color-purple-300: #c4b5fd;
-  --color-purple-400: #a78bfa;
-  --color-purple-500: #8b5cf6;
-  --color-purple-600: #7c3aed;
-  --color-purple-700: #6d28d9;
-  --color-purple-800: #5b21b6;
-  --color-purple-900: #4c1d95;
+  --color-yellow-50: #fefce8;
+  --color-yellow-100: #fef9c3;
+  --color-yellow-200: #fef08a;
+  --color-yellow-300: #fde047;
+  --color-yellow-400: #facc15;
+  --color-yellow-500: #eab308;
+  --color-yellow-600: #ca8a04;
+  --color-yellow-700: #a16207;
+  --color-yellow-800: #854d0e;
+  --color-yellow-900: #713f12;
 
   --font-outfit: 'Outfit', 'Inter', 'system-ui', 'sans-serif';
 
@@ -42,13 +42,13 @@ body {
 
 /* Background Gradients */
 .bg-gradient-playful {
-  background: linear-gradient(-45deg, #ff9eb5, #e0c3fc, #ffccd5, #c8b6ff);
+  background: linear-gradient(-45deg, #fbcfe8, #fef08a, #ffccd5, #fff59d);
   background-size: 400% 400%;
   animation: gradientBG 15s ease infinite;
 }
 
 .dark .bg-gradient-playful {
-  background: linear-gradient(-45deg, #2b1028, #180922, #10061e, #361730);
+  background: linear-gradient(-45deg, #2c0c1e, #291a03, #1e0513, #221d03);
   background-size: 400% 400%;
   animation: gradientBG 15s ease infinite;
 }

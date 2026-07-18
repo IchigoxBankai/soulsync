@@ -106,7 +106,7 @@ export const WhoKnowsMeBetter = () => {
         >
           <ArrowLeft size={16} />
         </button>
-        <span className="font-extrabold text-xl bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+        <span className="font-extrabold text-xl bg-gradient-to-r from-pink-500 to-yellow-600 bg-clip-text text-transparent">
           🧠 Who Knows Me Better?
         </span>
         <div className="w-8 h-8" />
@@ -121,7 +121,7 @@ export const WhoKnowsMeBetter = () => {
               👑 You are the Answerer!
             </span>
           ) : (
-            <span className="text-xs font-bold px-3 py-1 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-full">
+            <span className="text-xs font-bold px-3 py-1 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 rounded-full">
               🔍 You are guessing {answererName}'s mind!
             </span>
           )}
@@ -162,7 +162,7 @@ export const WhoKnowsMeBetter = () => {
                       <button
                         type="submit"
                         disabled={!answerInput.trim()}
-                        className="bg-gradient-to-r from-pink-500 to-purple-500 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
+                        className="bg-gradient-to-r from-pink-500 to-yellow-500 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
                       >
                         <Send size={18} />
                         Submit Answer Secretly
@@ -185,7 +185,7 @@ export const WhoKnowsMeBetter = () => {
                 {!isAnswerer ? (
                   <>
                     <div>
-                      <span className="text-[10px] tracking-wider uppercase font-bold text-purple-500">The Question</span>
+                      <span className="text-[10px] tracking-wider uppercase font-bold text-yellow-500">The Question</span>
                       <h2 className="text-xl font-bold text-slate-800 dark:text-white mt-1">
                         {question}
                       </h2>
@@ -204,7 +204,7 @@ export const WhoKnowsMeBetter = () => {
                       <button
                         type="submit"
                         disabled={!guessInput.trim()}
-                        className="bg-gradient-to-r from-purple-500 to-pink-500 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
+                        className="bg-gradient-to-r from-yellow-500 to-pink-500 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
                       >
                         <Send size={18} />
                         Submit Guess
@@ -280,7 +280,7 @@ export const WhoKnowsMeBetter = () => {
 
                 <button
                   onClick={handleNextRound}
-                  className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform shadow-md mt-4"
+                  className="bg-gradient-to-r from-pink-500 to-yellow-500 text-white font-bold py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform shadow-md mt-4"
                 >
                   Switch Roles & Next Round
                 </button>

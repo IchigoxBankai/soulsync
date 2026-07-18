@@ -78,7 +78,7 @@ export const Navbar = () => {
     <nav className="w-full max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4 select-none">
       {/* Brand logo & title */}
       <div className="flex items-center gap-2">
-        <span className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent drop-shadow-sm select-none">
+        <span className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-yellow-600 bg-clip-text text-transparent drop-shadow-sm select-none">
           SoulSync
         </span>
         

@@ -94,7 +94,7 @@ export const SameBrain = () => {
         >
           <ArrowLeft size={16} />
         </button>
-        <span className="font-extrabold text-xl bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+        <span className="font-extrabold text-xl bg-gradient-to-r from-pink-500 to-yellow-600 bg-clip-text text-transparent">
           ❤️ Same Brain
         </span>
         <div className="w-8 h-8" /> {/* Spacer */}
@@ -135,7 +135,7 @@ export const SameBrain = () => {
                     <button
                       type="submit"
                       disabled={!answer.trim()}
-                      className="bg-gradient-to-r from-pink-500 to-purple-500 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold text-base py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
+                      className="bg-gradient-to-r from-pink-500 to-yellow-500 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold text-base py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
                     >
                       <Send size={18} />
                       Submit Answer
@@ -203,7 +203,7 @@ export const SameBrain = () => {
                 {/* Next button */}
                 <button
                   onClick={loadNewPrompt}
-                  className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold text-base py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform shadow-md mt-4"
+                  className="bg-gradient-to-r from-pink-500 to-yellow-500 text-white font-bold text-base py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform shadow-md mt-4"
                 >
                   Next Prompt
                 </button>

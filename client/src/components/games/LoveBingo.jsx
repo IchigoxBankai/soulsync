@@ -86,7 +86,7 @@ export const LoveBingo = () => {
       {showBingoAnimation && (
         <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md z-50 flex flex-col items-center justify-center text-white">
           <span className="text-8xl animate-bounce">💝</span>
-          <h1 className="text-5xl font-black bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent uppercase tracking-wider text-center px-4 mt-4">
+          <h1 className="text-5xl font-black bg-gradient-to-r from-pink-400 to-yellow-400 bg-clip-text text-transparent uppercase tracking-wider text-center px-4 mt-4">
             BINGO ❤️
           </h1>
           <p className="text-xl font-bold text-slate-200 mt-2">
@@ -106,7 +106,7 @@ export const LoveBingo = () => {
         >
           <ArrowLeft size={16} />
         </button>
-        <span className="font-extrabold text-xl bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+        <span className="font-extrabold text-xl bg-gradient-to-r from-pink-500 to-yellow-600 bg-clip-text text-transparent">
           ❤️ Love Bingo
         </span>
         
@@ -166,7 +166,7 @@ export const LoveBingo = () => {
                   onClick={() => handleCellClick(index)}
                   className={`relative p-1 rounded-xl text-[9px] sm:text-xs font-bold leading-tight flex items-center justify-center text-center transition-all aspect-square border overflow-hidden ${
                     isCenter
-                      ? 'bg-gradient-to-br from-pink-500 to-purple-600 border-pink-400 text-white shadow shadow-pink-500/30 font-black cursor-default scale-102'
+                      ? 'bg-gradient-to-br from-pink-500 to-yellow-600 border-pink-400 text-white shadow shadow-pink-500/30 font-black cursor-default scale-102'
                       : isMarked
                       ? 'bg-pink-500 border-pink-400 text-white font-extrabold shadow shadow-pink-500/20'
                       : 'bg-white/40 dark:bg-slate-800/40 border-slate-200/20 text-slate-700 dark:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'

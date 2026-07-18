@@ -141,7 +141,7 @@ export const FastestTap = () => {
         >
           <ArrowLeft size={16} />
         </button>
-        <span className="font-extrabold text-xl bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+        <span className="font-extrabold text-xl bg-gradient-to-r from-pink-500 to-yellow-600 bg-clip-text text-transparent">
           🎯 Fastest Tap
         </span>
         <div className="w-8 h-8" />
@@ -185,7 +185,7 @@ export const FastestTap = () => {
             {player?.isHost && (
               <button
                 onClick={handleStart}
-                className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold text-base py-3 px-8 rounded-2xl hover:scale-105 active:scale-95 transition-transform flex items-center gap-2 shadow-md"
+                className="bg-gradient-to-r from-pink-500 to-yellow-500 text-white font-bold text-base py-3 px-8 rounded-2xl hover:scale-105 active:scale-95 transition-transform flex items-center gap-2 shadow-md"
               >
                 <Zap size={18} />
                 Start Round
@@ -258,7 +258,7 @@ export const FastestTap = () => {
               ) : (
                 <>
                   <span className="text-4xl animate-bounce">🔥</span>
-                  <h3 className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                  <h3 className="text-xl font-bold text-yellow-600 dark:text-yellow-400">
                     Round {round} Winner: {room.players.find(p => p.id === roundResult.roundWinnerId)?.name || 'Tie'}
                   </h3>
                 </>
@@ -288,7 +288,7 @@ export const FastestTap = () => {
               state === 'match_over' ? (
                 <button
                   onClick={handleReset}
-                  className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-3 px-6 rounded-2xl hover:scale-105 active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
+                  className="bg-gradient-to-r from-pink-500 to-yellow-500 text-white font-bold py-3 px-6 rounded-2xl hover:scale-105 active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
                 >
                   <RotateCcw size={18} />
                   Rematch
@@ -296,7 +296,7 @@ export const FastestTap = () => {
               ) : (
                 <button
                   onClick={handleNextRound}
-                  className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-3 px-6 rounded-2xl hover:scale-105 active:scale-95 transition-transform shadow-md"
+                  className="bg-gradient-to-r from-pink-500 to-yellow-500 text-white font-bold py-3 px-6 rounded-2xl hover:scale-105 active:scale-95 transition-transform shadow-md"
                 >
                   Next Round
                 </button>

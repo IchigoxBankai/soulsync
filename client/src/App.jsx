@@ -95,7 +95,7 @@ const MainApp = () => {
           <div className="w-full max-w-md glass rounded-3xl p-6 sm:p-8 border border-pink-200/20 shadow-xl flex flex-col items-center gap-6 text-center animate-in fade-in zoom-in-95 duration-300">
             <div>
               <span className="text-4xl select-none">❤️</span>
-              <h1 className="text-4xl font-extrabold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent mt-2 tracking-wide font-outfit select-none">
+              <h1 className="text-4xl font-extrabold bg-gradient-to-r from-pink-500 to-yellow-600 bg-clip-text text-transparent mt-2 tracking-wide font-outfit select-none">
                 SoulSync
               </h1>
               <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
@@ -123,7 +123,7 @@ const MainApp = () => {
                   <button
                     disabled={!name.trim()}
                     onClick={handleCreate}
-                    className="w-full py-3.5 bg-gradient-to-r from-pink-500 to-purple-500 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold text-base rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3.5 bg-gradient-to-r from-pink-500 to-yellow-500 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold text-base rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
                   >
                     <span>Create Room</span>
                   </button>
@@ -142,7 +142,7 @@ const MainApp = () => {
                 // Joining Screen Form
                 <form onSubmit={handleJoin} className="w-full flex flex-col gap-3 mt-2 animate-in slide-in-from-right duration-200">
                   <div className="flex flex-col text-left gap-1">
-                    <label className="text-[10px] tracking-wider uppercase font-bold text-purple-500 pl-1">6-Digit Room Code</label>
+                    <label className="text-[10px] tracking-wider uppercase font-bold text-yellow-500 pl-1">6-Digit Room Code</label>
                     <input
                       type="text"
                       value={code}
@@ -166,7 +166,7 @@ const MainApp = () => {
                     <button
                       type="submit"
                       disabled={!code.trim() || code.length < 6}
-                      className="flex-1 py-3 bg-gradient-to-r from-pink-500 to-purple-500 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold rounded-2xl active:scale-95 transition-transform flex items-center justify-center gap-1.5 shadow"
+                      className="flex-1 py-3 bg-gradient-to-r from-pink-500 to-yellow-500 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold rounded-2xl active:scale-95 transition-transform flex items-center justify-center gap-1.5 shadow"
                     >
                       <span>Join</span>
                       <ArrowRight size={16} />
@@ -263,13 +263,13 @@ const MainApp = () => {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
                       {[
                         { id: 'sameBrain', name: 'Same Brain', icon: '❤️', color: 'hover:border-pink-300 hover:shadow-pink-500/10' },
-                        { id: 'wouldYouRather', name: 'Would You Rather', icon: '😂', color: 'hover:border-purple-300 hover:shadow-purple-500/10' },
+                        { id: 'wouldYouRather', name: 'Would You Rather', icon: '😂', color: 'hover:border-yellow-300 hover:shadow-yellow-500/10' },
                         { id: 'secretMessage', name: 'Secret Message', icon: '💌', color: 'hover:border-pink-300 hover:shadow-pink-500/10' },
-                        { id: 'whoKnowsMeBetter', name: 'Who Knows Me Better', icon: '🧠', color: 'hover:border-purple-300 hover:shadow-purple-500/10' },
+                        { id: 'whoKnowsMeBetter', name: 'Who Knows Me Better', icon: '🧠', color: 'hover:border-yellow-300 hover:shadow-yellow-500/10' },
                         { id: 'fastestTap', name: 'Fastest Tap', icon: '🎯', color: 'hover:border-pink-300 hover:shadow-pink-500/10' },
-                        { id: 'truthOrDare', name: 'Truth or Dare', icon: '😈', color: 'hover:border-purple-300 hover:shadow-purple-500/10' },
+                        { id: 'truthOrDare', name: 'Truth or Dare', icon: '😈', color: 'hover:border-yellow-300 hover:shadow-yellow-500/10' },
                         { id: 'guessMyMood', name: 'Guess My Mood', icon: '🎭', color: 'hover:border-pink-300 hover:shadow-pink-500/10' },
-                        { id: 'loveBingo', name: 'Love Bingo', icon: '❤️', color: 'hover:border-purple-300 hover:shadow-purple-500/10' }
+                        { id: 'loveBingo', name: 'Love Bingo', icon: '❤️', color: 'hover:border-yellow-300 hover:shadow-yellow-500/10' }
                       ].map((game) => {
                         const isDisabled = !player?.isHost;
                         return (

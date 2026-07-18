@@ -35,7 +35,7 @@ export const Chat = () => {
             setIsOpen(true);
             audioController.playClick();
           }}
-          className="fixed bottom-6 right-4 z-40 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white p-4 rounded-full shadow-xl transition-transform hover:scale-105 active:scale-95 flex items-center justify-center"
+          className="fixed bottom-6 right-4 z-40 bg-gradient-to-r from-pink-500 to-yellow-500 hover:from-pink-600 hover:to-yellow-600 text-white p-4 rounded-full shadow-xl transition-transform hover:scale-105 active:scale-95 flex items-center justify-center"
         >
           <MessageCircle size={24} />
           {messages.length > 0 && (
@@ -50,7 +50,7 @@ export const Chat = () => {
       {isOpen && (
         <div className="fixed bottom-6 right-4 z-40 w-80 sm:w-96 h-[450px] glass rounded-2xl shadow-2xl flex flex-col border border-pink-200/50 overflow-hidden animate-in slide-in-from-bottom-5 duration-200">
           {/* Header */}
-          <div className="bg-gradient-to-r from-pink-400 to-purple-500 p-4 text-white flex items-center justify-between">
+          <div className="bg-gradient-to-r from-pink-400 to-yellow-500 p-4 text-white flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MessageCircle size={20} />
               <span className="font-semibold text-sm">Room Chat</span>
@@ -79,7 +79,7 @@ export const Chat = () => {
 
                 if (isSystem) {
                   return (
-                    <div key={i} className="text-center text-[11px] text-purple-600 dark:text-purple-400 font-medium py-1 px-3 bg-purple-500/10 rounded-full mx-auto max-w-[90%]">
+                    <div key={i} className="text-center text-[11px] text-yellow-600 dark:text-yellow-400 font-medium py-1 px-3 bg-yellow-500/10 rounded-full mx-auto max-w-[90%]">
                       {msg.text}
                     </div>
                   );
@@ -154,7 +154,7 @@ export const Chat = () => {
             />
             <button
               type="submit"
-              className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white p-2 rounded-xl transition-transform hover:scale-105 active:scale-95"
+              className="bg-gradient-to-r from-pink-500 to-yellow-500 hover:from-pink-600 hover:to-yellow-600 text-white p-2 rounded-xl transition-transform hover:scale-105 active:scale-95"
             >
               <Send size={18} />
             </button>

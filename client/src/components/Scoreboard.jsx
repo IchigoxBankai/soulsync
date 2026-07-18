@@ -60,7 +60,7 @@ export const Scoreboard = () => {
                 </span>
 
                 <div className="flex items-baseline gap-1 mt-1">
-                  <span className="text-3xl font-extrabold bg-gradient-to-br from-pink-500 to-purple-600 bg-clip-text text-transparent">
+                  <span className="text-3xl font-extrabold bg-gradient-to-br from-pink-500 to-yellow-600 bg-clip-text text-transparent">
                     {p.score}
                   </span>
                   <span className="text-[10px] text-slate-400 font-medium">pts</span>

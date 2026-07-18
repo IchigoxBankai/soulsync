@@ -84,7 +84,7 @@ export const GuessMyMood = () => {
         >
           <ArrowLeft size={16} />
         </button>
-        <span className="font-extrabold text-xl bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+        <span className="font-extrabold text-xl bg-gradient-to-r from-pink-500 to-yellow-600 bg-clip-text text-transparent">
           🎭 Guess My Mood
         </span>
         <div className="w-8 h-8" />
@@ -99,7 +99,7 @@ export const GuessMyMood = () => {
               👑 You are selecting the mood emoji!
             </span>
           ) : (
-            <span className="text-xs font-bold px-3 py-1 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-full">
+            <span className="text-xs font-bold px-3 py-1 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 rounded-full">
               🔍 You are guessing {answererName}'s mood!
             </span>
           )}
@@ -149,7 +149,7 @@ export const GuessMyMood = () => {
             {!isAnswerer ? (
               <>
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] tracking-wider uppercase font-bold text-purple-500">Guess {answererName}'s Mood</span>
+                  <span className="text-[10px] tracking-wider uppercase font-bold text-yellow-500">Guess {answererName}'s Mood</span>
                   <p className="text-xs text-slate-400 font-medium px-4">
                     Which emoji did {answererName} pick to describe their mood? Choose wisely!
                   </p>
@@ -162,7 +162,7 @@ export const GuessMyMood = () => {
                       disabled={!!selectedEmoji}
                       onClick={() => handleSelectGuess(emoji)}
                       className={`text-4xl p-4 glass rounded-2xl hover:scale-115 active:scale-95 transition-all shadow-sm ${
-                        selectedEmoji === emoji ? 'bg-purple-500/20 border-purple-400 scale-110' : ''
+                        selectedEmoji === emoji ? 'bg-yellow-500/20 border-yellow-400 scale-110' : ''
                       }`}
                     >
                       {emoji}
@@ -232,7 +232,7 @@ export const GuessMyMood = () => {
 
             <button
               onClick={handleNext}
-              className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-3 px-6 rounded-2xl hover:scale-105 active:scale-95 transition-transform shadow-md mt-4"
+              className="bg-gradient-to-r from-pink-500 to-yellow-500 text-white font-bold py-3 px-6 rounded-2xl hover:scale-105 active:scale-95 transition-transform shadow-md mt-4"
             >
               Switch Roles & Next Round
             </button>

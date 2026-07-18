@@ -108,7 +108,7 @@ export const WouldYouRather = () => {
         >
           <ArrowLeft size={16} />
         </button>
-        <span className="font-extrabold text-xl bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+        <span className="font-extrabold text-xl bg-gradient-to-r from-pink-500 to-yellow-600 bg-clip-text text-transparent">
           😂 Would You Rather
         </span>
         <div className="w-8 h-8" />
@@ -125,8 +125,8 @@ export const WouldYouRather = () => {
           <>
             {/* Title / Prompt */}
             <div className="flex flex-col gap-1.5">
-              <span className="text-[10px] tracking-wider uppercase font-bold text-purple-500">Would you rather...</span>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 self-center">
+              <span className="text-[10px] tracking-wider uppercase font-bold text-yellow-500">Would you rather...</span>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 self-center">
                 Category: {question.cat || 'Random'}
               </span>
             </div>
@@ -161,10 +161,10 @@ export const WouldYouRather = () => {
                 className={`w-full p-6 rounded-2xl border text-left transition-all duration-300 relative overflow-hidden ${
                   revealData
                     ? revealData.choices[player.id] === 'option2'
-                      ? 'bg-gradient-to-r from-purple-500 to-purple-600 border-purple-500 text-white shadow-md'
+                      ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 border-yellow-500 text-white shadow-md'
                       : 'bg-white/10 dark:bg-black/10 border-slate-200/20 text-slate-400'
                     : selectedChoice === 'option2'
-                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 border-purple-500 text-white shadow-md'
+                    ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 border-yellow-500 text-white shadow-md'
                     : 'bg-white/50 dark:bg-slate-800/50 border-slate-200/30 text-slate-700 dark:text-slate-200 hover:scale-[1.02] active:scale-98 shadow-sm hover:shadow-md'
                 }`}
               >
@@ -180,9 +180,9 @@ export const WouldYouRather = () => {
               selectedChoice ? (
                 <div className="flex flex-col items-center gap-2.5 py-4">
                   <div className="flex gap-1 justify-center">
-                    <span className="w-2.5 h-2.5 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-2.5 h-2.5 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-2.5 h-2.5 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <span className="w-2.5 h-2.5 bg-yellow-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-2.5 h-2.5 bg-yellow-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-2.5 h-2.5 bg-yellow-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                   <span className="text-xs font-semibold text-slate-400">Waiting for partner...</span>
                 </div>
@@ -206,10 +206,10 @@ export const WouldYouRather = () => {
                   ) : (
                     <div className="flex flex-col items-center gap-1.5">
                       <span className="text-5xl animate-bounce">😂</span>
-                      <h3 className="text-2xl font-black text-purple-600 dark:text-purple-400">
+                      <h3 className="text-2xl font-black text-yellow-600 dark:text-yellow-400">
                         Opposites attract!
                       </h3>
-                      <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold bg-purple-500/10 px-3 py-1 rounded-full">
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold bg-yellow-500/10 px-3 py-1 rounded-full">
                         You picked different options!
                       </span>
                     </div>
@@ -237,7 +237,7 @@ export const WouldYouRather = () => {
                 {/* Next Button */}
                 <button
                   onClick={loadNewQuestion}
-                  className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold text-base py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform shadow-md mt-4"
+                  className="bg-gradient-to-r from-pink-500 to-yellow-500 text-white font-bold text-base py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform shadow-md mt-4"
                 >
                   Next Question
                 </button>

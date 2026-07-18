@@ -104,7 +104,7 @@ export const SecretMessage = () => {
         >
           <ArrowLeft size={16} />
         </button>
-        <span className="font-extrabold text-xl bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+        <span className="font-extrabold text-xl bg-gradient-to-r from-pink-500 to-yellow-600 bg-clip-text text-transparent">
           💌 Secret Message
         </span>
         <div className="w-8 h-8" />
@@ -151,7 +151,7 @@ export const SecretMessage = () => {
                 <button
                   type="submit"
                   disabled={!message.trim()}
-                  className="bg-gradient-to-r from-pink-500 to-purple-500 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
+                  className="bg-gradient-to-r from-pink-500 to-yellow-500 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
                 >
                   <Send size={18} />
                   Submit Secret Message
@@ -195,11 +195,11 @@ export const SecretMessage = () => {
                   <div 
                     key={p.id} 
                     className={`flex flex-col p-4 glass rounded-2xl border ${
-                      isMe ? 'border-pink-300/30' : 'border-purple-300/30'
+                      isMe ? 'border-pink-300/30' : 'border-yellow-300/30'
                     }`}
                   >
                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
-                      <Heart size={10} className={isMe ? 'text-pink-500 fill-pink-500' : 'text-purple-500 fill-purple-500'} />
+                      <Heart size={10} className={isMe ? 'text-pink-500 fill-pink-500' : 'text-yellow-500 fill-purple-500'} />
                       {p.name}'s Secret
                     </span>
                     <p className="text-base font-bold italic text-slate-800 dark:text-slate-100 break-words">
@@ -213,7 +213,7 @@ export const SecretMessage = () => {
             {/* Reset button */}
             <button
               onClick={handleReset}
-              className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold text-base py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md mt-2"
+              className="bg-gradient-to-r from-pink-500 to-yellow-500 text-white font-bold text-base py-3 px-6 rounded-2xl hover:scale-[1.02] active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md mt-2"
             >
               <RotateCcw size={18} />
               Play Again

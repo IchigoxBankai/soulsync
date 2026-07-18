@@ -92,7 +92,7 @@ export const TruthOrDare = () => {
         >
           <ArrowLeft size={16} />
         </button>
-        <span className="font-extrabold text-xl bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+        <span className="font-extrabold text-xl bg-gradient-to-r from-pink-500 to-yellow-600 bg-clip-text text-transparent">
           😈 Truth or Dare
         </span>
         <div className="w-8 h-8" />
@@ -137,7 +137,7 @@ export const TruthOrDare = () => {
                     className={`w-full h-full flex items-center justify-center ${
                       isTruth
                         ? 'bg-gradient-to-r from-pink-400 to-pink-300'
-                        : 'bg-gradient-to-r from-purple-500 to-purple-400'
+                        : 'bg-gradient-to-r from-yellow-500 to-yellow-400'
                     }`}
                   >
                     <span 
@@ -164,7 +164,7 @@ export const TruthOrDare = () => {
         {!isSpinning && !result && (
           <button
             onClick={handleSpin}
-            className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold text-base py-3 px-8 rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-md mt-2"
+            className="bg-gradient-to-r from-pink-500 to-yellow-500 text-white font-bold text-base py-3 px-8 rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-md mt-2"
           >
             Spin the Wheel!
           </button>
@@ -202,7 +202,7 @@ export const TruthOrDare = () => {
 
             <button
               onClick={handleSpin}
-              className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold text-base py-3 px-8 rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-md mt-2"
+              className="bg-gradient-to-r from-pink-500 to-yellow-500 text-white font-bold text-base py-3 px-8 rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-md mt-2"
             >
               Spin Again!
             </button>
