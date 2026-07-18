@@ -1,27 +1,90 @@
 @import "tailwindcss";
 
-@theme {
-  --color-pink-50: #fff0f3;
-  --color-pink-100: #ffdde3;
-  --color-pink-200: #ffbeca;
-  --color-pink-300: #ff8fa3;
-  --color-pink-400: #ff5c7d;
-  --color-pink-500: #ff2a55;
-  --color-pink-600: #e60e3a;
-  --color-pink-700: #c1042a;
-  --color-pink-800: #a00627;
-  --color-pink-900: #850a24;
+/* -------------------------------------------------------------
+   SOULSYNC DYNAMIC COLOR THEME VARIABLES
+   ------------------------------------------------------------- */
+:root {
+  --theme-p1: #ff2a55; /* Sunset Pink */
+  --theme-p1-dark: #e60e3a;
+  --theme-p2: #eab308; /* Sunset Yellow */
+  --theme-p2-dark: #ca8a04;
+  --theme-bg-1: #fbcfe8;
+  --theme-bg-2: #fef08a;
+  --theme-bg-3: #ffccd5;
+  --theme-bg-4: #fff59d;
+  --theme-dark-bg-1: #2c0c1e;
+  --theme-dark-bg-2: #291a03;
+  --theme-dark-bg-3: #1e0513;
+  --theme-dark-bg-4: #221d03;
+}
 
-  --color-yellow-50: #fefce8;
-  --color-yellow-100: #fef9c3;
-  --color-yellow-200: #fef08a;
-  --color-yellow-300: #fde047;
-  --color-yellow-400: #facc15;
-  --color-yellow-500: #eab308;
-  --color-yellow-600: #ca8a04;
-  --color-yellow-700: #a16207;
-  --color-yellow-800: #854d0e;
-  --color-yellow-900: #713f12;
+[data-theme="midnight"] {
+  --theme-p1: #ff2a55; /* Midnight Pink */
+  --theme-p1-dark: #e60e3a;
+  --theme-p2: #8b5cf6; /* Midnight Purple */
+  --theme-p2-dark: #7c3aed;
+  --theme-bg-1: #ff9eb5;
+  --theme-bg-2: #e0c3fc;
+  --theme-bg-3: #ffccd5;
+  --theme-bg-4: #c8b6ff;
+  --theme-dark-bg-1: #2b1028;
+  --theme-dark-bg-2: #180922;
+  --theme-dark-bg-3: #10061e;
+  --theme-dark-bg-4: #361730;
+}
+
+[data-theme="forest"] {
+  --theme-p1: #10b981; /* Forest Emerald */
+  --theme-p1-dark: #047857;
+  --theme-p2: #f59e0b; /* Forest Gold */
+  --theme-p2-dark: #d97706;
+  --theme-bg-1: #a7f3d0;
+  --theme-bg-2: #fde68a;
+  --theme-bg-3: #d1fae5;
+  --theme-bg-4: #fef3c7;
+  --theme-dark-bg-1: #064e3b;
+  --theme-dark-bg-2: #78350f;
+  --theme-dark-bg-3: #022c22;
+  --theme-dark-bg-4: #451a03;
+}
+
+[data-theme="ocean"] {
+  --theme-p1: #06b6d4; /* Ocean Cyan */
+  --theme-p1-dark: #0891b2;
+  --theme-p2: #3b82f6; /* Ocean Blue */
+  --theme-p2-dark: #2563eb;
+  --theme-bg-1: #a5f3fc;
+  --theme-bg-2: #bfdbfe;
+  --theme-bg-3: #cffafe;
+  --theme-bg-4: #dbeafe;
+  --theme-dark-bg-1: #0e7490;
+  --theme-dark-bg-2: #1e3a8a;
+  --theme-dark-bg-3: #083344;
+  --theme-dark-bg-4: #172554;
+}
+
+@theme {
+  --color-pink-50: var(--theme-bg-1);
+  --color-pink-100: var(--theme-bg-1);
+  --color-pink-200: var(--theme-bg-3);
+  --color-pink-300: var(--theme-bg-3);
+  --color-pink-400: var(--theme-p1);
+  --color-pink-500: var(--theme-p1);
+  --color-pink-600: var(--theme-p1-dark);
+  --color-pink-700: var(--theme-p1-dark);
+  --color-pink-800: var(--theme-p1-dark);
+  --color-pink-900: var(--theme-p1-dark);
+
+  --color-yellow-50: var(--theme-bg-2);
+  --color-yellow-100: var(--theme-bg-2);
+  --color-yellow-200: var(--theme-bg-4);
+  --color-yellow-300: var(--theme-bg-4);
+  --color-yellow-400: var(--theme-p2);
+  --color-yellow-500: var(--theme-p2);
+  --color-yellow-600: var(--theme-p2-dark);
+  --color-yellow-700: var(--theme-p2-dark);
+  --color-yellow-800: var(--theme-p2-dark);
+  --color-yellow-900: var(--theme-p2-dark);
 
   --font-outfit: 'Outfit', 'Inter', 'system-ui', 'sans-serif';
 
@@ -42,13 +105,13 @@ body {
 
 /* Background Gradients */
 .bg-gradient-playful {
-  background: linear-gradient(-45deg, #fbcfe8, #fef08a, #ffccd5, #fff59d);
+  background: linear-gradient(-45deg, var(--theme-bg-1), var(--theme-bg-2), var(--theme-bg-3), var(--theme-bg-4));
   background-size: 400% 400%;
   animation: gradientBG 15s ease infinite;
 }
 
 .dark .bg-gradient-playful {
-  background: linear-gradient(-45deg, #2c0c1e, #291a03, #1e0513, #221d03);
+  background: linear-gradient(-45deg, var(--theme-dark-bg-1), var(--theme-dark-bg-2), var(--theme-dark-bg-3), var(--theme-dark-bg-4));
   background-size: 400% 400%;
   animation: gradientBG 15s ease infinite;
 }

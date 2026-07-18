@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SocketProvider, useSocket } from './context/SocketContext';
 import { Navbar } from './components/Navbar';
 import { Scoreboard } from './components/Scoreboard';
@@ -28,6 +28,28 @@ const MainApp = () => {
   const [code, setCode] = useState('');
   const [isJoining, setIsJoining] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Theme options state
+  const [currentTheme, setCurrentTheme] = useState(() => {
+    return localStorage.getItem('soulsync_theme_color') || 'sunset';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    localStorage.setItem('soulsync_theme_color', currentTheme);
+  }, [currentTheme]);
+
+  const changeTheme = (themeId) => {
+    setCurrentTheme(themeId);
+    audioController.playClick();
+  };
+
+  const themes = [
+    { id: 'sunset', name: 'Sunset Love', emoji: '🌅', c1: '#ff2a55', c2: '#eab308' },
+    { id: 'midnight', name: 'Midnight', emoji: '🔮', c1: '#ff2a55', c2: '#8b5cf6' },
+    { id: 'forest', name: 'Nordic Forest', emoji: '🌲', c1: '#10b981', c2: '#f59e0b' },
+    { id: 'ocean', name: 'Ocean Breeze', emoji: '🌊', c1: '#06b6d4', c2: '#3b82f6' }
+  ];
 
   const handleCreate = (e) => {
     e.preventDefault();
@@ -295,6 +317,42 @@ const MainApp = () => {
                           </button>
                         );
                       })}
+                    </div>
+
+                    {/* Theme Selector Section */}
+                    <div className="glass rounded-3xl p-5 border border-pink-200/15 flex flex-col gap-4 mt-2">
+                      <div className="flex items-center gap-1.5 pl-1">
+                        <Sparkles size={16} className="text-pink-500 fill-pink-500 animate-pulse" />
+                        <h3 className="font-bold text-xs text-slate-800 dark:text-white uppercase tracking-wider">
+                          Choose Game Theme
+                        </h3>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {themes.map((t) => (
+                          <button
+                            key={t.id}
+                            onClick={() => changeTheme(t.id)}
+                            className={`flex flex-col gap-2 p-3.5 rounded-2xl border text-left transition-all duration-300 ${
+                              currentTheme === t.id
+                                ? 'border-pink-400 bg-white/40 dark:bg-slate-800/40 shadow-sm scale-102 font-bold ring-2 ring-pink-400/20'
+                                : 'border-pink-200/10 hover:bg-white/20 hover:scale-101'
+                            }`}
+                          >
+                            <div className="flex justify-between items-center w-full">
+                              <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate pr-1">
+                                {t.name}
+                              </span>
+                              <span className="text-xs filter drop-shadow-sm select-none">
+                                {t.emoji}
+                              </span>
+                            </div>
+                            <div className="flex gap-1.5 mt-0.5">
+                              <div className="w-3.5 h-3.5 rounded-full border border-black/10 dark:border-white/10" style={{ backgroundColor: t.c1 }} />
+                              <div className="w-3.5 h-3.5 rounded-full border border-black/10 dark:border-white/10" style={{ backgroundColor: t.c2 }} />
+                            </div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
