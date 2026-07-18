@@ -10,6 +10,10 @@ import { WhoKnowsMeBetter } from './components/games/WhoKnowsMeBetter';
 import { FastestTap } from './components/games/FastestTap';
 import { TruthOrDare } from './components/games/TruthOrDare';
 import { RedGreen } from './components/games/RedGreen';
+import { Likely } from './components/games/Likely';
+import { ThisOrThat } from './components/games/ThisOrThat';
+import { Ranking } from './components/games/Ranking';
+import { Debate } from './components/games/Debate';
 import { LoveBingo } from './components/games/LoveBingo';
 import { audioController } from './utils/audio';
 import { Copy, Check, Users, ShieldAlert, ArrowRight, Sparkles } from 'lucide-react';
@@ -91,6 +95,14 @@ const MainApp = () => {
         return <TruthOrDare />;
       case 'redGreen':
         return <RedGreen />;
+      case 'likely':
+        return <Likely />;
+      case 'thisOrThat':
+        return <ThisOrThat />;
+      case 'ranking':
+        return <Ranking />;
+      case 'debate':
+        return <Debate />;
       case 'loveBingo':
         return <LoveBingo />;
       default:
@@ -322,6 +334,10 @@ const MainApp = () => {
                       {[
                         { id: 'sameBrain', name: 'Same Brain', icon: '❤️', color: 'hover:border-pink-300 hover:shadow-pink-500/10' },
                         { id: 'wouldYouRather', name: 'Would You Rather', icon: '😂', color: 'hover:border-yellow-300 hover:shadow-yellow-500/10' },
+                        { id: 'likely', name: 'Who Is Likely To', icon: '😈', color: 'hover:border-pink-300 hover:shadow-pink-500/10' },
+                        { id: 'thisOrThat', name: 'This or That', icon: '⚡', color: 'hover:border-yellow-300 hover:shadow-yellow-500/10' },
+                        { id: 'ranking', name: 'Secret Ranking', icon: '👑', color: 'hover:border-pink-300 hover:shadow-pink-500/10' },
+                        { id: 'debate', name: 'Relationship Debate', icon: '💬', color: 'hover:border-yellow-300 hover:shadow-yellow-500/10' },
                         { id: 'secretMessage', name: 'Secret Message', icon: '💌', color: 'hover:border-pink-300 hover:shadow-pink-500/10' },
                         { id: 'whoKnowsMeBetter', name: 'Who Knows Me Better', icon: '🧠', color: 'hover:border-yellow-300 hover:shadow-yellow-500/10' },
                         { id: 'fastestTap', name: 'Fastest Tap', icon: '🎯', color: 'hover:border-pink-300 hover:shadow-pink-500/10' },

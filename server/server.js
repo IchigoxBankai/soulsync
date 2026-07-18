@@ -36,6 +36,49 @@ function readTxtFile(fileName, fallbackArray) {
   return fallbackArray;
 }
 
+// Load custom ranking structure
+function readRankingFile(fileName, fallbackArray) {
+  try {
+    const filePath = path.join(gamesFolderPath, fileName);
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath, 'utf-8');
+      const lines = content.split('\n').map(line => line.trim());
+      const groups = [];
+      let currentGroup = null;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (line.length === 0) {
+          if (currentGroup && currentGroup.items.length === 5) {
+            groups.push(currentGroup);
+          }
+          currentGroup = null;
+          continue;
+        }
+
+        if (!currentGroup) {
+          currentGroup = { category: line, items: [] };
+        } else {
+          currentGroup.items.push(line);
+        }
+      }
+      
+      if (currentGroup && currentGroup.items.length === 5) {
+        groups.push(currentGroup);
+      }
+
+      if (groups.length > 0) {
+        console.log(`[SOULSYNC GAMES] Loaded ${groups.length} ranking categories from ${fileName}`);
+        return groups;
+      }
+    }
+  } catch (err) {
+    console.error(`Error reading ${fileName}:`, err);
+  }
+  console.log(`[SOULSYNC GAMES] Using fallback prompts for ${fileName}`);
+  return fallbackArray;
+}
+
 const FALLBACK_TRUTHS = [
   "What was your first thought about me?",
   "What do you like most about me?",
@@ -80,12 +123,70 @@ const FALLBACK_RED_GREEN = [
   "Has never been out of their home state."
 ];
 
+const FALLBACK_LIKELY = [
+  "Forget an anniversary.",
+  "Say 'I love you' first.",
+  "Text first.",
+  "Fall asleep first.",
+  "Get jealous first.",
+  "Cry during a movie.",
+  "Spend more money.",
+  "Get lost while traveling.",
+  "Plan the date.",
+  "Forget their phone."
+];
+
+const FALLBACK_THIS_OR_THAT = [
+  "Hug or Kiss?",
+  "Call or Text?",
+  "Morning or Night?",
+  "Beach or Mountains?",
+  "Pizza or Burger?",
+  "Coffee or Tea?",
+  "Sunrise or Sunset?",
+  "Cats or Dogs?",
+  "Stay home or Travel?",
+  "Chocolate or Flowers?"
+];
+
+const FALLBACK_DEBATE = [
+  "Can exes be friends?",
+  "Is love at first sight real?",
+  "Should couples share passwords?",
+  "Should couples text every day?",
+  "Is jealousy cute?",
+  "Should couples live together before marriage?",
+  "Should couples post each other online?",
+  "Is long-distance worth it?",
+  "Should both partners pay on dates?",
+  "Should couples tell each other everything?"
+];
+
+const FALLBACK_RANKING = [
+  {
+    category: "Rank these date ideas:",
+    items: ["Beach picnic", "Movie night", "Cozy cafe", "Road trip", "Amusement park"]
+  },
+  {
+    category: "Rank these gifts:",
+    items: ["Flowers", "Chocolate box", "Fine jewelry", "Handmade photo scrap book", "Sincere love letter"]
+  },
+  {
+    category: "Rank these vacation ideas:",
+    items: ["Cabin in the woods", "Beach resort", "Exploring city sights", "Backpacking wilderness", "Luxury cruise ship"]
+  }
+];
+
 const MASTER_PROMPTS = {
   truth: readTxtFile('truth.txt', FALLBACK_TRUTHS),
   dare: readTxtFile('dare.txt', FALLBACK_DARES),
   wyr: readTxtFile('soulsync-wouldurather.txt', FALLBACK_WYR),
   sameBrain: readTxtFile('same brain.txt', FALLBACK_SAME_BRAIN),
-  redGreen: readTxtFile('redgreen.txt', FALLBACK_RED_GREEN)
+  redGreen: readTxtFile('redgreen.txt', FALLBACK_RED_GREEN),
+  likely: readTxtFile('likely.txt', FALLBACK_LIKELY),
+  thisOrThat: readTxtFile('thisorthat.txt', FALLBACK_THIS_OR_THAT),
+  debate: readTxtFile('debate.txt', FALLBACK_DEBATE),
+  ranking: readRankingFile('ranking.txt', FALLBACK_RANKING)
 };
 
 // Helper to shuffle arrays
@@ -203,6 +304,10 @@ io.on('connection', (socket) => {
         fastestTap: { round: 1, results: {}, scores: {}, state: 'waiting' },
         truthOrDare: { category: '', type: '', prompt: '', targetPlayerId: '' },
         redGreen: { questionIndex: 1, situation: '', answers: {}, matches: 0, differences: 0, step: 'playing' },
+        likely: { questionIndex: 1, prompt: '', answers: {}, matches: 0, differences: 0, step: 'playing' },
+        thisOrThat: { questionIndex: 1, prompt: '', answers: {}, matches: 0, differences: 0, step: 'playing' },
+        ranking: { questionIndex: 1, category: '', items: [], answers: {}, totalScore: 0, step: 'playing' },
+        debate: { questionIndex: 1, prompt: '', answers: {}, agrees: 0, disagrees: 0, step: 'playing' },
         loveBingo: { tasks: [], boards: {}, bingos: {} }
       }
     };
@@ -386,6 +491,46 @@ io.on('connection', (socket) => {
         answers: {},
         matches: 0,
         differences: 0,
+        step: 'playing'
+      };
+    } else if (gameName === 'likely') {
+      const prompt = getNextPrompt(room, 'likely');
+      room.gameStates.likely = {
+        questionIndex: 1,
+        prompt,
+        answers: {},
+        matches: 0,
+        differences: 0,
+        step: 'playing'
+      };
+    } else if (gameName === 'thisOrThat') {
+      const prompt = getNextPrompt(room, 'thisOrThat');
+      room.gameStates.thisOrThat = {
+        questionIndex: 1,
+        prompt,
+        answers: {},
+        matches: 0,
+        differences: 0,
+        step: 'playing'
+      };
+    } else if (gameName === 'ranking') {
+      const group = getNextPrompt(room, 'ranking');
+      room.gameStates.ranking = {
+        questionIndex: 1,
+        category: group.category,
+        items: group.items,
+        answers: {},
+        totalScore: 0,
+        step: 'playing'
+      };
+    } else if (gameName === 'debate') {
+      const prompt = getNextPrompt(room, 'debate');
+      room.gameStates.debate = {
+        questionIndex: 1,
+        prompt,
+        answers: {},
+        agrees: 0,
+        disagrees: 0,
         step: 'playing'
       };
     } else if (gameName === 'loveBingo') {
@@ -822,6 +967,260 @@ io.on('connection', (socket) => {
       answers: {},
       matches: 0,
       differences: 0,
+      step: 'playing'
+    };
+    broadcastRoomUpdate(room.code);
+  });
+
+  // GAME: Who Is More Likely To
+  socket.on('likely_submit', ({ choice }) => {
+    const { room, player } = getRoomAndPlayer(socket);
+    if (!room || !player) return;
+
+    room.gameStates.likely.answers[player.id] = choice;
+
+    const submittedCount = Object.keys(room.gameStates.likely.answers).length;
+    if (submittedCount >= room.players.length) {
+      const playerIds = Object.keys(room.gameStates.likely.answers);
+      const isMatch = room.gameStates.likely.answers[playerIds[0]] === room.gameStates.likely.answers[playerIds[1]];
+
+      if (isMatch) {
+        room.gameStates.likely.matches += 1;
+        room.players.forEach(p => p.score += 1);
+      } else {
+        room.gameStates.likely.differences += 1;
+      }
+
+      room.gameStates.likely.step = 'reveal';
+      
+      io.to(room.code).emit('likely_revealed', {
+        answers: room.gameStates.likely.answers,
+        match: isMatch
+      });
+    } else {
+      broadcastRoomUpdate(room.code);
+    }
+  });
+
+  socket.on('likely_next', () => {
+    const { room } = getRoomAndPlayer(socket);
+    if (!room) return;
+
+    const nextIndex = room.gameStates.likely.questionIndex + 1;
+    if (nextIndex > 10) {
+      room.gameStates.likely.step = 'summary';
+    } else {
+      const prompt = getNextPrompt(room, 'likely');
+      room.gameStates.likely.questionIndex = nextIndex;
+      room.gameStates.likely.prompt = prompt;
+      room.gameStates.likely.answers = {};
+      room.gameStates.likely.step = 'playing';
+    }
+    broadcastRoomUpdate(room.code);
+  });
+
+  socket.on('likely_reset', () => {
+    const { room } = getRoomAndPlayer(socket);
+    if (!room) return;
+
+    const prompt = getNextPrompt(room, 'likely');
+    room.gameStates.likely = {
+      questionIndex: 1,
+      prompt,
+      answers: {},
+      matches: 0,
+      differences: 0,
+      step: 'playing'
+    };
+    broadcastRoomUpdate(room.code);
+  });
+
+  // GAME: This or That
+  socket.on('this_or_that_submit', ({ choice }) => {
+    const { room, player } = getRoomAndPlayer(socket);
+    if (!room || !player) return;
+
+    room.gameStates.thisOrThat.answers[player.id] = choice;
+
+    const submittedCount = Object.keys(room.gameStates.thisOrThat.answers).length;
+    if (submittedCount >= room.players.length) {
+      const playerIds = Object.keys(room.gameStates.thisOrThat.answers);
+      const isMatch = room.gameStates.thisOrThat.answers[playerIds[0]] === room.gameStates.thisOrThat.answers[playerIds[1]];
+
+      if (isMatch) {
+        room.gameStates.thisOrThat.matches += 1;
+        room.players.forEach(p => p.score += 1);
+      } else {
+        room.gameStates.thisOrThat.differences += 1;
+      }
+
+      room.gameStates.thisOrThat.step = 'reveal';
+      
+      io.to(room.code).emit('this_or_that_revealed', {
+        answers: room.gameStates.thisOrThat.answers,
+        match: isMatch
+      });
+    } else {
+      broadcastRoomUpdate(room.code);
+    }
+  });
+
+  socket.on('this_or_that_next', () => {
+    const { room } = getRoomAndPlayer(socket);
+    if (!room) return;
+
+    const nextIndex = room.gameStates.thisOrThat.questionIndex + 1;
+    if (nextIndex > 10) {
+      room.gameStates.thisOrThat.step = 'summary';
+    } else {
+      const prompt = getNextPrompt(room, 'thisOrThat');
+      room.gameStates.thisOrThat.questionIndex = nextIndex;
+      room.gameStates.thisOrThat.prompt = prompt;
+      room.gameStates.thisOrThat.answers = {};
+      room.gameStates.thisOrThat.step = 'playing';
+    }
+    broadcastRoomUpdate(room.code);
+  });
+
+  socket.on('this_or_that_reset', () => {
+    const { room } = getRoomAndPlayer(socket);
+    if (!room) return;
+
+    const prompt = getNextPrompt(room, 'thisOrThat');
+    room.gameStates.thisOrThat = {
+      questionIndex: 1,
+      prompt,
+      answers: {},
+      matches: 0,
+      differences: 0,
+      step: 'playing'
+    };
+    broadcastRoomUpdate(room.code);
+  });
+
+  // GAME: Secret Ranking
+  socket.on('ranking_submit', ({ rankingList }) => {
+    const { room, player } = getRoomAndPlayer(socket);
+    if (!room || !player) return;
+
+    room.gameStates.ranking.answers[player.id] = rankingList;
+
+    const submittedCount = Object.keys(room.gameStates.ranking.answers).length;
+    if (submittedCount >= room.players.length) {
+      const playerIds = Object.keys(room.gameStates.ranking.answers);
+      const r1 = room.gameStates.ranking.answers[playerIds[0]] || [];
+      const r2 = room.gameStates.ranking.answers[playerIds[1]] || [];
+      
+      let roundMatches = 0;
+      for (let i = 0; i < 5; i++) {
+        if (r1[i] === r2[i]) roundMatches++;
+      }
+
+      room.gameStates.ranking.totalScore += roundMatches;
+      // Award point to both players for each match
+      room.players.forEach(p => p.score += roundMatches);
+
+      room.gameStates.ranking.step = 'reveal';
+      
+      io.to(room.code).emit('ranking_revealed', {
+        answers: room.gameStates.ranking.answers
+      });
+    } else {
+      broadcastRoomUpdate(room.code);
+    }
+  });
+
+  socket.on('ranking_next', () => {
+    const { room } = getRoomAndPlayer(socket);
+    if (!room) return;
+
+    const nextIndex = room.gameStates.ranking.questionIndex + 1;
+    if (nextIndex > 5) {
+      room.gameStates.ranking.step = 'summary';
+    } else {
+      const group = getNextPrompt(room, 'ranking');
+      room.gameStates.ranking.questionIndex = nextIndex;
+      room.gameStates.ranking.category = group.category;
+      room.gameStates.ranking.items = group.items;
+      room.gameStates.ranking.answers = {};
+      room.gameStates.ranking.step = 'playing';
+    }
+    broadcastRoomUpdate(room.code);
+  });
+
+  socket.on('ranking_reset', () => {
+    const { room } = getRoomAndPlayer(socket);
+    if (!room) return;
+
+    const group = getNextPrompt(room, 'ranking');
+    room.gameStates.ranking = {
+      questionIndex: 1,
+      category: group.category,
+      items: group.items,
+      answers: {},
+      totalScore: 0,
+      step: 'playing'
+    };
+    broadcastRoomUpdate(room.code);
+  });
+
+  // GAME: Relationship Debate
+  socket.on('debate_submit', ({ choice }) => {
+    const { room, player } = getRoomAndPlayer(socket);
+    if (!room || !player) return;
+
+    room.gameStates.debate.answers[player.id] = choice;
+
+    const submittedCount = Object.keys(room.gameStates.debate.answers).length;
+    if (submittedCount >= room.players.length) {
+      const playerIds = Object.keys(room.gameStates.debate.answers);
+      const isMatch = room.gameStates.debate.answers[playerIds[0]] === room.gameStates.debate.answers[playerIds[1]];
+
+      if (isMatch) {
+        room.gameStates.debate.agrees += 1;
+      } else {
+        room.gameStates.debate.disagrees += 1;
+      }
+
+      room.gameStates.debate.step = 'reveal';
+      
+      io.to(room.code).emit('debate_revealed', {
+        answers: room.gameStates.debate.answers,
+        match: isMatch
+      });
+    } else {
+      broadcastRoomUpdate(room.code);
+    }
+  });
+
+  socket.on('debate_next', () => {
+    const { room } = getRoomAndPlayer(socket);
+    if (!room) return;
+
+    const nextIndex = room.gameStates.debate.questionIndex + 1;
+    if (nextIndex > 10) {
+      room.gameStates.debate.step = 'summary';
+    } else {
+      const prompt = getNextPrompt(room, 'debate');
+      room.gameStates.debate.questionIndex = nextIndex;
+      room.gameStates.debate.prompt = prompt;
+      room.gameStates.debate.answers = {};
+      room.gameStates.debate.step = 'playing';
+    }
+    broadcastRoomUpdate(room.code);
+  });
+
+  socket.on('debate_reset', () => {
+    const { room } = getRoomAndPlayer(socket);
+    if (!room) return;
+
+    const prompt = getNextPrompt(room, 'debate');
+    room.gameStates.debate = {
+      questionIndex: 1,
+      prompt,
+      answers: {},
+      agrees: 0,
+      disagrees: 0,
       step: 'playing'
     };
     broadcastRoomUpdate(room.code);
