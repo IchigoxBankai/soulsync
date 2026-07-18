@@ -114,90 +114,126 @@ const MainApp = () => {
 
         {/* LOBBY / HOME SCREEN (If no room is joined yet) */}
         {!room ? (
-          <div className="w-full max-w-md glass rounded-3xl p-6 sm:p-8 border border-pink-200/20 shadow-xl flex flex-col items-center gap-6 text-center animate-in fade-in zoom-in-95 duration-300">
-            <div>
-              <span className="text-4xl select-none">❤️</span>
-              <h1 className="text-4xl font-extrabold bg-gradient-to-r from-pink-500 to-yellow-600 bg-clip-text text-transparent mt-2 tracking-wide font-outfit select-none">
-                SoulSync
-              </h1>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
-                Play fun mini games together anywhere in the world.
-              </p>
-            </div>
-
-            {/* Entry fields Form */}
-            <div className="w-full flex flex-col gap-4">
-              <div className="flex flex-col text-left gap-1">
-                <label className="text-[10px] tracking-wider uppercase font-bold text-pink-500 pl-1">Your Nickname</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your name..."
-                  maxLength={15}
-                  className="glass-input px-4 py-3 rounded-2xl font-semibold text-slate-700 dark:text-white"
-                />
+          <>
+            <div className="w-full max-w-md glass rounded-3xl p-6 sm:p-8 border border-pink-200/20 shadow-xl flex flex-col items-center gap-6 text-center animate-in fade-in zoom-in-95 duration-300">
+              <div>
+                <span className="text-4xl select-none">❤️</span>
+                <h1 className="text-4xl font-extrabold bg-gradient-to-r from-pink-500 to-yellow-600 bg-clip-text text-transparent mt-2 tracking-wide font-outfit select-none">
+                  SoulSync
+                </h1>
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
+                  Play fun mini games together anywhere in the world.
+                </p>
               </div>
 
-              {!isJoining ? (
-                // Home Actions
-                <div className="flex flex-col gap-3 mt-2 w-full">
-                  <button
-                    disabled={!name.trim()}
-                    onClick={handleCreate}
-                    className="w-full py-3.5 bg-gradient-to-r from-pink-500 to-yellow-500 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold text-base rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
-                  >
-                    <span>Create Room</span>
-                  </button>
-                  <button
-                    disabled={!name.trim()}
-                    onClick={() => {
-                      setIsJoining(true);
-                      audioController.playClick();
-                    }}
-                    className="w-full py-3.5 glass hover:bg-white/30 text-slate-700 dark:text-slate-300 disabled:opacity-50 font-bold text-base rounded-2xl shadow-md border border-pink-200/30 hover:scale-[1.02] active:scale-95 transition-all"
-                  >
-                    <span>Join Existing Room</span>
-                  </button>
+              {/* Entry fields Form */}
+              <div className="w-full flex flex-col gap-4">
+                <div className="flex flex-col text-left gap-1">
+                  <label className="text-[10px] tracking-wider uppercase font-bold text-pink-500 pl-1">Your Nickname</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter your name..."
+                    maxLength={15}
+                    className="glass-input px-4 py-3 rounded-2xl font-semibold text-slate-700 dark:text-white"
+                  />
                 </div>
-              ) : (
-                // Joining Screen Form
-                <form onSubmit={handleJoin} className="w-full flex flex-col gap-3 mt-2 animate-in slide-in-from-right duration-200">
-                  <div className="flex flex-col text-left gap-1">
-                    <label className="text-[10px] tracking-wider uppercase font-bold text-yellow-500 pl-1">6-Digit Room Code</label>
-                    <input
-                      type="text"
-                      value={code}
-                      onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      placeholder="e.g. 123456"
-                      className="glass-input px-4 py-3 rounded-2xl text-center font-bold text-lg tracking-widest text-slate-700 dark:text-white"
-                    />
-                  </div>
-                  
-                  <div className="flex gap-3 mt-2">
+
+                {!isJoining ? (
+                  // Home Actions
+                  <div className="flex flex-col gap-3 mt-2 w-full">
                     <button
-                      type="button"
+                      disabled={!name.trim()}
+                      onClick={handleCreate}
+                      className="w-full py-3.5 bg-gradient-to-r from-pink-500 to-yellow-500 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold text-base rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                    >
+                      <span>Create Room</span>
+                    </button>
+                    <button
+                      disabled={!name.trim()}
                       onClick={() => {
-                        setIsJoining(false);
+                        setIsJoining(true);
                         audioController.playClick();
                       }}
-                      className="flex-1 py-3 bg-slate-400/20 hover:bg-slate-400/30 text-slate-700 dark:text-slate-200 font-bold rounded-2xl active:scale-95 transition-transform"
+                      className="w-full py-3.5 glass hover:bg-white/30 text-slate-700 dark:text-slate-300 disabled:opacity-50 font-bold text-base rounded-2xl shadow-md border border-pink-200/30 hover:scale-[1.02] active:scale-95 transition-all"
                     >
-                      Back
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={!code.trim() || code.length < 6}
-                      className="flex-1 py-3 bg-gradient-to-r from-pink-500 to-yellow-500 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold rounded-2xl active:scale-95 transition-transform flex items-center justify-center gap-1.5 shadow"
-                    >
-                      <span>Join</span>
-                      <ArrowRight size={16} />
+                      <span>Join Existing Room</span>
                     </button>
                   </div>
-                </form>
-              )}
+                ) : (
+                  // Joining Screen Form
+                  <form onSubmit={handleJoin} className="w-full flex flex-col gap-3 mt-2 animate-in slide-in-from-right duration-200">
+                    <div className="flex flex-col text-left gap-1">
+                      <label className="text-[10px] tracking-wider uppercase font-bold text-yellow-500 pl-1">6-Digit Room Code</label>
+                      <input
+                        type="text"
+                        value={code}
+                        onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="e.g. 123456"
+                        className="glass-input px-4 py-3 rounded-2xl text-center font-bold text-lg tracking-widest text-slate-700 dark:text-white"
+                      />
+                    </div>
+                    
+                    <div className="flex gap-3 mt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsJoining(false);
+                          audioController.playClick();
+                        }}
+                        className="flex-1 py-3 bg-slate-400/20 hover:bg-slate-400/30 text-slate-700 dark:text-slate-200 font-bold rounded-2xl active:scale-95 transition-transform"
+                      >
+                        Back
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={!code.trim() || code.length < 6}
+                        className="flex-1 py-3 bg-gradient-to-r from-pink-500 to-yellow-500 disabled:from-slate-400 disabled:to-slate-400 text-white font-bold rounded-2xl active:scale-95 transition-transform flex items-center justify-center gap-1.5 shadow"
+                      >
+                        <span>Join</span>
+                        <ArrowRight size={16} />
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
             </div>
-          </div>
+
+            {/* Home Screen Theme Selector */}
+            <div className="w-full max-w-md glass rounded-3xl p-5 border border-pink-200/15 flex flex-col gap-4 mt-6 animate-in fade-in duration-300">
+              <div className="flex items-center gap-1.5 pl-1 justify-center">
+                <Sparkles size={16} className="text-pink-500 fill-pink-500 animate-pulse" />
+                <h3 className="font-bold text-xs text-slate-800 dark:text-white uppercase tracking-wider">
+                  Choose App Theme
+                </h3>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {themes.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => changeTheme(t.id)}
+                    className={`flex flex-col gap-2 p-3 rounded-2xl border text-left transition-all duration-300 ${
+                      currentTheme === t.id
+                        ? 'border-pink-400 bg-white/40 dark:bg-slate-800/40 shadow-sm scale-102 font-bold ring-2 ring-pink-400/20'
+                        : 'border-pink-200/10 hover:bg-white/20 hover:scale-101'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center w-full">
+                      <span className="text-[10px] font-bold text-slate-700 dark:text-slate-200 truncate">
+                        {t.name}
+                      </span>
+                      <span className="text-xs filter drop-shadow-sm select-none">{t.emoji}</span>
+                    </div>
+                    <div className="flex gap-1.5 mt-0.5">
+                      <div className="w-3.5 h-3.5 rounded-full border border-black/10 dark:border-white/10" style={{ backgroundColor: t.c1 }} />
+                      <div className="w-3.5 h-3.5 rounded-full border border-black/10 dark:border-white/10" style={{ backgroundColor: t.c2 }} />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
         ) : (
           // ROOM ACTIVE INTERFACES
           <div className="w-full flex flex-col items-center">
