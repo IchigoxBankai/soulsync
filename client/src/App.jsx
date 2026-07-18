@@ -9,7 +9,7 @@ import { SecretMessage } from './components/games/SecretMessage';
 import { WhoKnowsMeBetter } from './components/games/WhoKnowsMeBetter';
 import { FastestTap } from './components/games/FastestTap';
 import { TruthOrDare } from './components/games/TruthOrDare';
-import { GuessMyMood } from './components/games/GuessMyMood';
+import { RedGreen } from './components/games/RedGreen';
 import { LoveBingo } from './components/games/LoveBingo';
 import { audioController } from './utils/audio';
 import { Copy, Check, Users, ShieldAlert, ArrowRight, Sparkles } from 'lucide-react';
@@ -89,8 +89,8 @@ const MainApp = () => {
         return <FastestTap />;
       case 'truthOrDare':
         return <TruthOrDare />;
-      case 'guessMyMood':
-        return <GuessMyMood />;
+      case 'redGreen':
+        return <RedGreen />;
       case 'loveBingo':
         return <LoveBingo />;
       default:
@@ -326,7 +326,7 @@ const MainApp = () => {
                         { id: 'whoKnowsMeBetter', name: 'Who Knows Me Better', icon: '🧠', color: 'hover:border-yellow-300 hover:shadow-yellow-500/10' },
                         { id: 'fastestTap', name: 'Fastest Tap', icon: '🎯', color: 'hover:border-pink-300 hover:shadow-pink-500/10' },
                         { id: 'truthOrDare', name: 'Truth or Dare', icon: '😈', color: 'hover:border-yellow-300 hover:shadow-yellow-500/10' },
-                        { id: 'guessMyMood', name: 'Guess My Mood', icon: '🎭', color: 'hover:border-pink-300 hover:shadow-pink-500/10' },
+                        { id: 'redGreen', name: 'Red or Green Flag', icon: '🚩', color: 'hover:border-pink-300 hover:shadow-pink-500/10' },
                         { id: 'loveBingo', name: 'Love Bingo', icon: '❤️', color: 'hover:border-yellow-300 hover:shadow-yellow-500/10' }
                       ].map((game) => {
                         const isDisabled = !player?.isHost;

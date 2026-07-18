@@ -64,12 +64,28 @@ const FALLBACK_SAME_BRAIN = [
   "Who falls asleep first?",
   "Who texts first?"
 ];
+const FALLBACK_RED_GREEN = [
+  "Replies after many hours.",
+  "Claps when the plane lands.",
+  "Still close friends with their ex.",
+  "Has a separate Instagram account for their pet.",
+  "Likes pineapple on pizza.",
+  "Wears socks to bed.",
+  "Doesn't tip at restaurants.",
+  "Stalks exes on social media.",
+  "Is always 15 minutes late.",
+  "Double dips chips at parties.",
+  "Watches movies with subtitles on.",
+  "Saves contacts with emojis next to their names.",
+  "Has never been out of their home state."
+];
 
 const MASTER_PROMPTS = {
   truth: readTxtFile('truth.txt', FALLBACK_TRUTHS),
   dare: readTxtFile('dare.txt', FALLBACK_DARES),
   wyr: readTxtFile('soulsync-wouldurather.txt', FALLBACK_WYR),
-  sameBrain: readTxtFile('same brain.txt', FALLBACK_SAME_BRAIN)
+  sameBrain: readTxtFile('same brain.txt', FALLBACK_SAME_BRAIN),
+  redGreen: readTxtFile('redgreen.txt', FALLBACK_RED_GREEN)
 };
 
 // Helper to shuffle arrays
@@ -89,7 +105,8 @@ function getNextPrompt(room, type) {
       truth: shuffleArray(MASTER_PROMPTS.truth),
       dare: shuffleArray(MASTER_PROMPTS.dare),
       wyr: shuffleArray(MASTER_PROMPTS.wyr),
-      sameBrain: shuffleArray(MASTER_PROMPTS.sameBrain)
+      sameBrain: shuffleArray(MASTER_PROMPTS.sameBrain),
+      redGreen: shuffleArray(MASTER_PROMPTS.redGreen)
     };
   }
 
@@ -185,7 +202,7 @@ io.on('connection', (socket) => {
         whoKnowsMeBetter: { question: '', answererId: '', answererSecret: '', guess: '', step: 'answering', history: [] },
         fastestTap: { round: 1, results: {}, scores: {}, state: 'waiting' },
         truthOrDare: { category: '', type: '', prompt: '', targetPlayerId: '' },
-        guessMyMood: { answererId: '', moodEmoji: '', guessEmoji: '', step: 'selecting' },
+        redGreen: { questionIndex: 1, situation: '', answers: {}, matches: 0, differences: 0, step: 'playing' },
         loveBingo: { tasks: [], boards: {}, bingos: {} }
       }
     };
@@ -361,12 +378,16 @@ io.on('connection', (socket) => {
       room.gameStates.truthOrDare.type = '';
       room.gameStates.truthOrDare.prompt = '';
       room.gameStates.truthOrDare.targetPlayerId = '';
-    } else if (gameName === 'guessMyMood') {
-      room.gameStates.guessMyMood.moodEmoji = '';
-      room.gameStates.guessMyMood.guessEmoji = '';
-      room.gameStates.guessMyMood.step = 'selecting';
-      // Select first player as answerer
-      room.gameStates.guessMyMood.answererId = room.players[0]?.id || '';
+    } else if (gameName === 'redGreen') {
+      const situation = getNextPrompt(room, 'redGreen');
+      room.gameStates.redGreen = {
+        questionIndex: 1,
+        situation,
+        answers: {},
+        matches: 0,
+        differences: 0,
+        step: 'playing'
+      };
     } else if (gameName === 'loveBingo') {
       room.gameStates.loveBingo.tasks = [];
       room.gameStates.loveBingo.boards = {};
@@ -740,52 +761,69 @@ io.on('connection', (socket) => {
     };
   });
 
-  // GAME 7: Guess My Mood
-  socket.on('guess_mood_select', ({ emoji }) => {
+  // GAME 7: Red Flag or Green Flag
+  socket.on('red_green_submit', ({ choice }) => {
     const { room, player } = getRoomAndPlayer(socket);
     if (!room || !player) return;
 
-    if (player.id !== room.gameStates.guessMyMood.answererId) return;
+    room.gameStates.redGreen.answers[player.id] = choice;
 
-    room.gameStates.guessMyMood.moodEmoji = emoji;
-    room.gameStates.guessMyMood.step = 'guessing';
-    broadcastRoomUpdate(room.code);
-  });
+    const submittedCount = Object.keys(room.gameStates.redGreen.answers).length;
+    if (submittedCount >= room.players.length) {
+      // Both submitted!
+      const playerIds = Object.keys(room.gameStates.redGreen.answers);
+      const isMatch = room.gameStates.redGreen.answers[playerIds[0]] === room.gameStates.redGreen.answers[playerIds[1]];
 
-  socket.on('guess_mood_submit', ({ guessEmoji }) => {
-    const { room, player } = getRoomAndPlayer(socket);
-    if (!room || !player) return;
+      if (isMatch) {
+        room.gameStates.redGreen.matches += 1;
+        // Award point to both
+        room.players.forEach(p => p.score += 1);
+      } else {
+        room.gameStates.redGreen.differences += 1;
+      }
 
-    if (player.id === room.gameStates.guessMyMood.answererId) return;
-
-    room.gameStates.guessMyMood.guessEmoji = guessEmoji;
-    room.gameStates.guessMyMood.step = 'reveal';
-
-    const isCorrect = room.gameStates.guessMyMood.moodEmoji === guessEmoji;
-    if (isCorrect) {
-      player.score += 1;
+      room.gameStates.redGreen.step = 'reveal';
+      
+      io.to(room.code).emit('red_green_revealed', {
+        answers: room.gameStates.redGreen.answers,
+        match: isMatch
+      });
+    } else {
+      broadcastRoomUpdate(room.code);
     }
-
-    io.to(room.code).emit('guess_mood_result', {
-      isCorrect,
-      moodEmoji: room.gameStates.guessMyMood.moodEmoji,
-      guessEmoji: room.gameStates.guessMyMood.guessEmoji
-    });
   });
 
-  socket.on('guess_mood_next', () => {
+  socket.on('red_green_next', () => {
     const { room } = getRoomAndPlayer(socket);
     if (!room) return;
 
-    // Swap roles
-    const currentAnswererIndex = room.players.findIndex(p => p.id === room.gameStates.guessMyMood.answererId);
-    const nextAnswererIndex = (currentAnswererIndex + 1) % room.players.length;
+    const nextIndex = room.gameStates.redGreen.questionIndex + 1;
+    if (nextIndex > 10) {
+      // Game Over, show summary
+      room.gameStates.redGreen.step = 'summary';
+    } else {
+      const situation = getNextPrompt(room, 'redGreen');
+      room.gameStates.redGreen.questionIndex = nextIndex;
+      room.gameStates.redGreen.situation = situation;
+      room.gameStates.redGreen.answers = {};
+      room.gameStates.redGreen.step = 'playing';
+    }
+    broadcastRoomUpdate(room.code);
+  });
 
-    room.gameStates.guessMyMood.answererId = room.players[nextAnswererIndex]?.id || '';
-    room.gameStates.guessMyMood.moodEmoji = '';
-    room.gameStates.guessMyMood.guessEmoji = '';
-    room.gameStates.guessMyMood.step = 'selecting';
+  socket.on('red_green_reset', () => {
+    const { room } = getRoomAndPlayer(socket);
+    if (!room) return;
 
+    const situation = getNextPrompt(room, 'redGreen');
+    room.gameStates.redGreen = {
+      questionIndex: 1,
+      situation,
+      answers: {},
+      matches: 0,
+      differences: 0,
+      step: 'playing'
+    };
     broadcastRoomUpdate(room.code);
   });
 
