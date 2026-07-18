@@ -203,6 +203,19 @@ const FALLBACK_NEVER_HAVE_I_EVER = [
   "Never have I ever talked to myself."
 ];
 
+const FALLBACK_EXCUSES = [
+  "Why am I late?",
+  "Why didn't I reply?",
+  "Why am I smiling?",
+  "Why am I quiet?",
+  "Why did I call you?",
+  "Why did I cancel our plans?",
+  "Why did I forget?",
+  "Why am I nervous?",
+  "Why am I awake so late?",
+  "Why did I ignore your message?"
+];
+
 const MASTER_PROMPTS = {
   truth: readTxtFile('truth.txt', FALLBACK_TRUTHS),
   dare: readTxtFile('dare.txt', FALLBACK_DARES),
@@ -214,7 +227,8 @@ const MASTER_PROMPTS = {
   debate: readTxtFile('debate.txt', FALLBACK_DEBATE),
   ranking: readRankingFile('ranking.txt', FALLBACK_RANKING),
   whoKnowsMeBetter: readTxtFile('whoknowsmebetter.txt', FALLBACK_WHO_KNOWS),
-  neverHaveIEver: readTxtFile('neverhaveiever.txt', FALLBACK_NEVER_HAVE_I_EVER)
+  neverHaveIEver: readTxtFile('neverhaveiever.txt', FALLBACK_NEVER_HAVE_I_EVER),
+  whatsMyExcuse: readTxtFile('whatsmyexcuse.txt', FALLBACK_EXCUSES)
 };
 
 // Helper to shuffle arrays
@@ -329,7 +343,7 @@ io.on('connection', (socket) => {
         wouldYouRather: { question: null, choices: {}, history: [] },
         secretMessage: { messages: {}, revealed: false },
         whoKnowsMeBetter: { questions: [], questionIndex: 1, round: 1, answers: { round1: {}, round2: {} }, step: 'playing' },
-        fastestTap: { round: 1, results: {}, scores: {}, state: 'waiting' },
+        whatsMyExcuse: { questionIndex: 1, prompts: [], answers: {}, matches: 0, differences: 0, step: 'playing' },
         truthOrDare: { category: '', type: '', prompt: '', targetPlayerId: '' },
         redGreen: { questionIndex: 1, situation: '', answers: {}, matches: 0, differences: 0, step: 'playing' },
         likely: { questionIndex: 1, prompt: '', answers: {}, matches: 0, differences: 0, step: 'playing' },
@@ -501,16 +515,16 @@ io.on('connection', (socket) => {
         },
         step: 'playing'
       };
-    } else if (gameName === 'fastestTap') {
-      room.gameStates.fastestTap.round = 1;
-      room.gameStates.fastestTap.results = {};
-      room.gameStates.fastestTap.scores = room.players.reduce((acc, p) => ({ ...acc, [p.id]: 0 }), {});
-      room.gameStates.fastestTap.state = 'waiting';
-      // Clear any remaining fastest tap timeouts
-      if (room.gameStates.fastestTap.timeout) {
-        clearTimeout(room.gameStates.fastestTap.timeout);
-        room.gameStates.fastestTap.timeout = null;
-      }
+    } else if (gameName === 'whatsMyExcuse') {
+      const selected = shuffleArray(MASTER_PROMPTS.whatsMyExcuse).slice(0, 20);
+      room.gameStates.whatsMyExcuse = {
+        prompts: selected,
+        questionIndex: 1,
+        answers: {},
+        matches: 0,
+        differences: 0,
+        step: 'playing'
+      };
     } else if (gameName === 'truthOrDare') {
       room.gameStates.truthOrDare.category = '';
       room.gameStates.truthOrDare.type = '';
@@ -748,153 +762,70 @@ io.on('connection', (socket) => {
     broadcastRoomUpdate(room.code);
   });
 
-  // GAME 5: Fastest Tap
-  socket.on('fastest_tap_start', () => {
-    const { room, player } = getRoomAndPlayer(socket);
-    if (!room || !player || !player.isHost) return;
-
-    // Clear any active timeouts
-    if (room.gameStates.fastestTap.timeout) {
-      clearTimeout(room.gameStates.fastestTap.timeout);
-      room.gameStates.fastestTap.timeout = null;
-    }
-
-    room.gameStates.fastestTap.state = 'countdown';
-    room.gameStates.fastestTap.results = {};
-    broadcastRoomUpdate(room.code);
-
-    // Pick random delay between 2 and 6 seconds
-    const delay = Math.floor(Math.random() * 4000) + 2000;
-    
-    io.to(room.code).emit('fastest_tap_countdown_start', { delay });
-
-    room.gameStates.fastestTap.timeout = setTimeout(() => {
-      const activeRoom = rooms.get(room.code);
-      if (activeRoom && activeRoom.gameStates.fastestTap.state === 'countdown') {
-        activeRoom.gameStates.fastestTap.state = 'go';
-        activeRoom.gameStates.fastestTap.timeout = null;
-        broadcastRoomUpdate(activeRoom.code);
-      }
-    }, delay + 3000); // 3 seconds count down on client, then delay
-  });
-
-  socket.on('fastest_tap_submit', ({ timeMs }) => {
+  // GAME 5: What's My Excuse?
+  socket.on('whats_excuse_submit', ({ excuse }) => {
     const { room, player } = getRoomAndPlayer(socket);
     if (!room || !player) return;
 
-    // Handle early tap (Foul) during countdown or delay
-    if (timeMs === 9999) {
-      if (room.gameStates.fastestTap.state === 'countdown') {
-        // Clear active timeouts
-        if (room.gameStates.fastestTap.timeout) {
-          clearTimeout(room.gameStates.fastestTap.timeout);
-          room.gameStates.fastestTap.timeout = null;
-        }
-
-        const foulingPlayerId = player.id;
-        const nonFoulingPlayer = room.players.find(p => p.id !== foulingPlayerId);
-
-        room.gameStates.fastestTap.results[foulingPlayerId] = 9999;
-        if (nonFoulingPlayer) {
-          room.gameStates.fastestTap.results[nonFoulingPlayer.id] = 0; // standard win
-          room.gameStates.fastestTap.scores[nonFoulingPlayer.id] = (room.gameStates.fastestTap.scores[nonFoulingPlayer.id] || 0) + 1;
-        }
-
-        room.gameStates.fastestTap.state = 'result';
-
-        // Check if match over (best of 5, first to 3 points)
-        let matchWinnerId = null;
-        room.players.forEach(p => {
-          if (room.gameStates.fastestTap.scores[p.id] >= 3) {
-            matchWinnerId = p.id;
-            p.score += 1; // Award overall point
-          }
-        });
-
-        if (matchWinnerId) {
-          room.gameStates.fastestTap.state = 'match_over';
-          room.gameStates.fastestTap.winner = matchWinnerId;
-        }
-
-        io.to(room.code).emit('fastest_tap_round_result', {
-          results: room.gameStates.fastestTap.results,
-          roundWinnerId: nonFoulingPlayer ? nonFoulingPlayer.id : null,
-          scores: room.gameStates.fastestTap.scores,
-          matchWinnerId
-        });
-        return;
-      }
+    const state = room.gameStates.whatsMyExcuse;
+    if (!state.answers[state.questionIndex]) {
+      state.answers[state.questionIndex] = {};
     }
+    state.answers[state.questionIndex][player.id] = excuse;
 
-    if (room.gameStates.fastestTap.state !== 'go') return;
-
-    room.gameStates.fastestTap.results[player.id] = timeMs;
-
-    const submittedCount = Object.keys(room.gameStates.fastestTap.results).length;
-
+    const submittedCount = Object.keys(state.answers[state.questionIndex]).length;
     if (submittedCount >= room.players.length) {
-      // Find winner of this round
-      const playerIds = Object.keys(room.gameStates.fastestTap.results);
-      const time1 = room.gameStates.fastestTap.results[playerIds[0]];
-      const time2 = room.gameStates.fastestTap.results[playerIds[1]];
+      const playerIds = Object.keys(state.answers[state.questionIndex]);
+      const exc1 = (state.answers[state.questionIndex][playerIds[0]] || '').trim().toLowerCase();
+      const exc2 = (state.answers[state.questionIndex][playerIds[1]] || '').trim().toLowerCase();
+      const isMatch = exc1 === exc2 && exc1 !== '';
 
-      let roundWinnerId = null;
-      if (time1 < time2) {
-        roundWinnerId = playerIds[0];
-      } else if (time2 < time1) {
-        roundWinnerId = playerIds[1];
+      if (isMatch) {
+        state.matches += 1;
+        room.players.forEach(p => p.score += 1);
+      } else {
+        state.differences += 1;
       }
 
-      if (roundWinnerId) {
-        room.gameStates.fastestTap.scores[roundWinnerId] = (room.gameStates.fastestTap.scores[roundWinnerId] || 0) + 1;
-      }
+      state.step = 'reveal';
 
-      room.gameStates.fastestTap.state = 'result';
-
-      // Check if match over (best of 5, first to 3 points)
-      let matchWinnerId = null;
-      room.players.forEach(p => {
-        if (room.gameStates.fastestTap.scores[p.id] >= 3) {
-          matchWinnerId = p.id;
-          p.score += 1; // Award overall point
-        }
+      io.to(room.code).emit('whats_excuse_revealed', {
+        answers: state.answers[state.questionIndex],
+        match: isMatch
       });
-
-      if (matchWinnerId) {
-        room.gameStates.fastestTap.state = 'match_over';
-        room.gameStates.fastestTap.winner = matchWinnerId;
-      }
-
-      io.to(room.code).emit('fastest_tap_round_result', {
-        results: room.gameStates.fastestTap.results,
-        roundWinnerId,
-        scores: room.gameStates.fastestTap.scores,
-        matchWinnerId
-      });
-    } else {
-      broadcastRoomUpdate(room.code);
     }
-  });
 
-  socket.on('fastest_tap_next_round', () => {
-    const { room, player } = getRoomAndPlayer(socket);
-    if (!room || !player || !player.isHost) return;
-
-    room.gameStates.fastestTap.round += 1;
-    room.gameStates.fastestTap.results = {};
-    room.gameStates.fastestTap.state = 'waiting';
     broadcastRoomUpdate(room.code);
   });
 
-  socket.on('fastest_tap_reset', () => {
-    const { room, player } = getRoomAndPlayer(socket);
-    if (!room || !player || !player.isHost) return;
+  socket.on('whats_excuse_next', () => {
+    const { room } = getRoomAndPlayer(socket);
+    if (!room) return;
 
-    room.gameStates.fastestTap.round = 1;
-    room.gameStates.fastestTap.results = {};
-    room.gameStates.fastestTap.scores = room.players.reduce((acc, p) => ({ ...acc, [p.id]: 0 }), {});
-    room.gameStates.fastestTap.state = 'waiting';
-    room.gameStates.fastestTap.winner = null;
+    const state = room.gameStates.whatsMyExcuse;
+    const nextIndex = state.questionIndex + 1;
+    if (nextIndex > 20) {
+      state.step = 'summary';
+    } else {
+      state.questionIndex = nextIndex;
+      state.step = 'playing';
+    }
+    broadcastRoomUpdate(room.code);
+  });
+
+  socket.on('whats_excuse_reset', () => {
+    const { room } = getRoomAndPlayer(socket);
+    if (!room) return;
+
+    const selected = shuffleArray(MASTER_PROMPTS.whatsMyExcuse).slice(0, 20);
+    room.gameStates.whatsMyExcuse = {
+      prompts: selected,
+      questionIndex: 1,
+      answers: {},
+      matches: 0,
+      differences: 0,
+      step: 'playing'
+    };
     broadcastRoomUpdate(room.code);
   });
 

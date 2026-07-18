@@ -7,7 +7,7 @@ import { SameBrain } from './components/games/SameBrain';
 import { WouldYouRather } from './components/games/WouldYouRather';
 import { SecretMessage } from './components/games/SecretMessage';
 import { WhoKnowsMeBetter } from './components/games/WhoKnowsMeBetter';
-import { FastestTap } from './components/games/FastestTap';
+import { WhatsMyExcuse } from './components/games/WhatsMyExcuse';
 import { TruthOrDare } from './components/games/TruthOrDare';
 import { RedGreen } from './components/games/RedGreen';
 import { Likely } from './components/games/Likely';
@@ -89,8 +89,8 @@ const MainApp = () => {
         return <SecretMessage />;
       case 'whoKnowsMeBetter':
         return <WhoKnowsMeBetter />;
-      case 'fastestTap':
-        return <FastestTap />;
+      case 'whatsMyExcuse':
+        return <WhatsMyExcuse />;
       case 'truthOrDare':
         return <TruthOrDare />;
       case 'redGreen':
@@ -340,7 +340,7 @@ const MainApp = () => {
                         { id: 'debate', name: 'Relationship Debate', icon: '💬', color: 'hover:border-yellow-300 hover:shadow-yellow-500/10' },
                         { id: 'secretMessage', name: 'Secret Message', icon: '💌', color: 'hover:border-pink-300 hover:shadow-pink-500/10' },
                         { id: 'whoKnowsMeBetter', name: 'Who Knows Me Better', icon: '🧠', color: 'hover:border-yellow-300 hover:shadow-yellow-500/10' },
-                        { id: 'fastestTap', name: 'Fastest Tap', icon: '🎯', color: 'hover:border-pink-300 hover:shadow-pink-500/10' },
+                        { id: 'whatsMyExcuse', name: "What's My Excuse?", icon: '🤔', color: 'hover:border-pink-300 hover:shadow-pink-500/10' },
                         { id: 'truthOrDare', name: 'Truth or Dare', icon: '😈', color: 'hover:border-yellow-300 hover:shadow-yellow-500/10' },
                         { id: 'redGreen', name: 'Red or Green Flag', icon: '🚩', color: 'hover:border-pink-300 hover:shadow-pink-500/10' },
                         { id: 'neverHaveIEver', name: 'Never Have I Ever', icon: '🙈', color: 'hover:border-yellow-300 hover:shadow-yellow-500/10' }
